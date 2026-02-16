@@ -1,0 +1,78 @@
+July 2012
+
+-------------------------------------------------------------------------------
+GENERAL
+-------------------------------------------------------------------------------
+
+This is the first release of CertCheck, a tool that transforms a given input 
+formula in QDIMACS format into an AIG and merges the result with the 
+corresponding certificate extracted by QRPcert. The resulting AIG is translated
+into a propositional formula in CNF via Tseitin transformation, which can be 
+then used for validating the correctness of the certificate. 
+CertCheck is part of a framework for extracting and validating QBF
+certificates. 
+For more information see 'http://fmv.jku.at/qbfcert/' and our tool paper 
+at SAT'12:
+
+@inproceedings{DBLP:conf/sat/NiemetzPLSB12,
+  author    = {Aina Niemetz and
+               Mathias Preiner and
+               Florian Lonsing and
+               Martina Seidl and
+               Armin Biere},
+  title     = {Resolution-Based Certificate Extraction for QBF - (Tool
+               Presentation)},
+  booktitle = {SAT},
+  year      = {2012},
+  pages     = {430-435},
+  ee        = {http://dx.doi.org/10.1007/978-3-642-31612-8_33},
+  crossref  = {DBLP:conf/sat/2012},
+  bibsource = {DBLP, http://dblp.uni-trier.de}
+}
+
+CertCheck is released under GPL version 3. A copy of the license can be found 
+in the file COPYING. If no file COPYING has been delivered with this release it
+can also be found at 'http://www.gnu.org/licenses/gpl.txt'.
+
+-------------------------------------------------------------------------------
+ CHANGELOG
+-------------------------------------------------------------------------------
+Version 1.0.1
+  - added check for quantification levels 
+
+Version 1.0
+  - First public release
+
+-------------------------------------------------------------------------------
+ BUILD
+-------------------------------------------------------------------------------
+ 
+ Unpack the sources and call 'make'. By default, it produces optimized code
+ without any assertions enabled. If you want to compile CertCheck with 
+ assertions enabled call 'make debug'.
+
+-------------------------------------------------------------------------------
+USAGE
+-------------------------------------------------------------------------------
+
+Basic usage: './certcheck <input-formula> <certificate>'
+
+For more usage information call './certcheck -h'.
+
+By default, CertCheck produces a CNF in DIMACS format. It also supports to
+print the AIG in AIGER format (binary and ascii) instead of translating it to 
+CNF.
+If the CNF produced by CertCheck is unsatisfiable, given QBF certificate is
+valid and hence represents a valid (counter-)model of given input formula.
+If the CNF is satisfiable, given QBF certificate is invalid.
+
+A more detailed description of CertCheck can be found in:
+'http://fmv.jku.at/preiner/papers/preiner-master_thesis-2012.pdf'
+
+-------------------------------------------------------------------------------
+CONTACT
+-------------------------------------------------------------------------------
+
+For comments, questions, bug reports etc. please contact Mathias Preiner.
+
+See also 'http://fmv.jku.at/preiner/' and 'http://fmv.jku.at/qbfcert/'.

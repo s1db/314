@@ -1,0 +1,4 @@
+[submodule "src/bindings/abc_lib"]
+	path = src/bindings/abc_lib
+	url = https://github.com/berkeley-abc/abc
+	group = build

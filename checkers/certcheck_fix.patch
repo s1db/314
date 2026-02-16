@@ -1,0 +1,50 @@
+--- simpleaig.c
++++ simpleaig.c
+@@ -28,6 +28,7 @@
+ #include <sys/stat.h>
+ #include <sys/types.h>
+ #include <sys/unistd.h>
++#include <unistd.h>
+ 
+ #include "simpleaig.h"
+ 
+--- certcheck.c
++++ certcheck.c
+@@ -362,6 +362,7 @@
+ {
+   int i, *and_map, lhs, rhs0, rhs1, var;
+   Stack visit;
++  char *visited;
+ 
+   assert (aig != NULL);
+ 
+@@ -370,6 +371,10 @@
+   for (i = 0; (unsigned) i < aig->num_ands; i++)
+     and_map[aig->ands[i].lhs] = i;
+ 
++  /* visited array to prevent exponential traversal */
++  visited = (char *) malloc ((aig->max_var + 1) * sizeof (char));
++  memset (visited, 0, (aig->max_var + 1) * sizeof (char));
++
+   STACK_INIT (visit, 8);
+ 
+   for (i = 0; (unsigned) i < aig->num_outputs; i++)
+@@ -394,6 +399,10 @@
+     {
+       POP (visit, lhs);
+ 
++      /* Skip already visited variables */
++      if (visited[abs(lhs)]) continue;
++      visited[abs(lhs)] = 1;
++
+       if (and_map[lhs] < 0)
+         continue;
+ 
+@@ -425,6 +434,7 @@
+     }
+   }
+ 
++  free (visited);
+   STACK_FREE (visit);
+   free (and_map);
+ }

@@ -1,0 +1,36 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+#ruff
+.ruff_cache
+
+#abc
+abc.history
+
+
+checkers/manthan/
+checkers/caqe_tool/
+checkers/certcheck_tool/
+
+checkers/caqe
+checkers/*certcheck
+checkers/checkSkolem
+
+*.log
+
+./outputs/
+
+*.v
+*.aig
+*.aag
+*.qdimacs
+*.cnf
+*.dot

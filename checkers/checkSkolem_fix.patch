@@ -1,0 +1,11 @@
+--- checkSkolem.py
++++ checkSkolem.py
+@@ -24,7 +24,7 @@
+ 
+ 
+ def _static_bin_path(bin_name):
+-    preferred = os.path.join("./dependencies/static_bin", bin_name)
++    preferred = os.path.join(REPO_ROOT, "dependencies", "static_bin", bin_name)
+     if os.path.isfile(preferred) and os.access(preferred, os.X_OK):
+         return os.path.abspath(preferred)
+     return os.path.abspath(os.path.join("./dependencies", bin_name))
