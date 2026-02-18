@@ -19,6 +19,33 @@ class Instance:
         self.quantifiers = quantifiers
         self.clauses = clauses
 
+        # Handle unquantified variables
+        all_vars = set(range(1, self.num_vars + 1))
+        quantified_vars = set()
+        for _, vars in self.quantifiers:
+            quantified_vars.update(vars)
+
+        unquantified = all_vars - quantified_vars
+        if unquantified:
+            sorted_unquantified = sorted(list(unquantified))
+            logger.warning(
+                f"Found unquantified variables: {sorted_unquantified}. "
+                "Adding them to the outermost existential block."
+            )
+
+            if not self.quantifiers:
+                self.quantifiers = [("e", sorted_unquantified)]
+            elif self.quantifiers[0][0] == "e":
+                # Extend the existing first existential block
+                # Tuples are immutable, so we replace the tuple
+                existing_vars = self.quantifiers[0][1]
+                # Merge and sort unique variables to be clean
+                new_vars = sorted(list(set(existing_vars) | unquantified))
+                self.quantifiers[0] = ("e", new_vars)
+            else:
+                # First block is universal, so prepend a new existential block
+                self.quantifiers.insert(0, ("e", sorted_unquantified))
+
         self.validate()
 
         self.dependency_scheme = dependency_scheme_class(self)

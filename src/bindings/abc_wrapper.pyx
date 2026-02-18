@@ -3,8 +3,6 @@
 from libc.stdlib cimport malloc, free
 from libc.string cimport strcpy, strlen
 from cpython.version cimport PY_MAJOR_VERSION
-import logging
-import time
 from src.utils.suppress import suppress_stdout_stderr
 
 cdef extern from "base/main/main.h":
@@ -54,9 +52,6 @@ cdef class AbcInterface:
             List[int] representing the Counter Example (input assignment) if SAT.
             None if Undecided (or error?).
         """
-        logger = logging.getLogger(__name__)
-        start_time = time.time()
-        
         # Suppress ABC Output
         with suppress_stdout_stderr():
             # 1. Read
@@ -89,16 +84,11 @@ cdef class AbcInterface:
             pCex = NULL
             if status == 0:
                  pCex = <Abc_Cex_t *>Abc_FrameReadCex(self._frame)
-
-        end_time = time.time()
-        duration = end_time - start_time
         
         if status == 1:
-            logger.info(f"ABC Check: UNSAT in {duration:.4f}s")
             return None # Verified!
             
         if status == 0:
-            logger.info(f"ABC Check: SAT in {duration:.4f}s")
             # Failed, get CEX
             # pCex was retrieved inside suppression block if status==0, but capturing pointer is fine?
             # Actually CEX structure is in memory.

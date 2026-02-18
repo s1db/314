@@ -1,13 +1,14 @@
 from typing import Union, List, Tuple
 from pathlib import Path
 from src.instance import Instance
-from src.dependency_schemes.trivial import TrivialDependencyScheme
+from src.dependency_schemes.trivial_inter_block import TrivialInterBlockDependencyScheme
 
 
 class QBFParser:
     @staticmethod
     def from_file(
-        path: Union[str, Path], dependency_scheme_class=TrivialDependencyScheme
+        path: Union[str, Path],
+        dependency_scheme_class=TrivialInterBlockDependencyScheme,
     ) -> Instance:
         with open(path, "r") as f:
             content = f.read()
@@ -15,7 +16,7 @@ class QBFParser:
 
     @staticmethod
     def from_qdimacs(
-        content: str, dependency_scheme_class=TrivialDependencyScheme
+        content: str, dependency_scheme_class=TrivialInterBlockDependencyScheme
     ) -> Instance:
         lines = content.splitlines()
 
@@ -71,7 +72,12 @@ class QBFParser:
                         break
                     vars.append(val)
 
-                quantifiers.append((q_type, vars))
+                if quantifiers and quantifiers[-1][0] == q_type:
+                    # Merge with existing block
+                    quantifiers[-1][1].extend(vars)
+                else:
+                    # New block
+                    quantifiers.append((q_type, vars))
 
             else:
                 lit = int(token)

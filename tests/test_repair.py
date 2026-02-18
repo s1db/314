@@ -17,9 +17,13 @@ class TestRepair:
         quantifiers = [("a", [1]), ("e", [2])]
         clauses = [[1, 2]]
         # Use a mock or trivial dependency scheme class
-        from src.dependency_schemes.trivial import TrivialDependencyScheme
+        from src.dependency_schemes.trivial_inter_block import (
+            TrivialInterBlockDependencyScheme,
+        )
 
-        instance = Instance(2, 1, quantifiers, clauses, TrivialDependencyScheme)
+        instance = Instance(
+            2, 1, quantifiers, clauses, TrivialInterBlockDependencyScheme
+        )
         return instance
 
     def test_repair_basic(self, manager, simple_instance):

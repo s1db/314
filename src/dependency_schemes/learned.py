@@ -1,6 +1,9 @@
-from typing import Set, Dict
+from typing import Set, Dict, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.candidate_function import CandidateFunction
 from src.instance import Instance
-from .base import DependencyScheme
+from .base import DependencyScheme, DependencyViolationError
 
 
 class LearnedDependencyScheme(DependencyScheme):
@@ -64,3 +67,64 @@ class LearnedDependencyScheme(DependencyScheme):
 
     def compute(self):
         pass
+
+    def register_candidates(
+        self, candidates: Dict[int, "CandidateFunction"], logger=None
+    ):
+        """
+        Registers candidates and updates dependencies.
+        """
+        if logger is None:
+            import logging
+
+            logger = logging.getLogger(__name__)
+
+        for y, func in candidates.items():
+            # IMPORTANT: Register the learned dependencies!
+            try:
+                logger.info(f"Registering dependencies for {y}: {func}")
+                self.update_dependencies(y, func.support)
+            except Exception as e:
+                logger.warning(
+                    f"Initial candidate for {y} violates dependencies: {e}. Clearing support."
+                )
+                pass
+
+    def update_dependencies(self, target_variable: int, used_variables: Set[int]):
+        """
+        Updates the dependency scheme
+        """
+        # 1. Validation against scheme policy
+        allowed = self.get_allowed_variables(target_variable)
+        invalid = used_variables - allowed
+        if invalid:
+            raise DependencyViolationError(
+                f"Variable {target_variable} depends on forbidden variables: {invalid}. "
+                f"Valid scope: {allowed}"
+            )
+
+        # 2. Update Graph structure
+        for dep in used_variables:
+            self._add_edge(target_variable, dep)
+
+    def _add_edge(self, u: int, v: int):
+        """
+        Adds dependency u -> v (u depends on v).
+        Checks for cycles immediately.
+        """
+        if u not in self.dependencies:
+            self.dependencies[u] = set()
+
+        # If edge already exists, skip
+        if v in self.dependencies[u]:
+            return
+
+        # Check if v depends on u (which would make u -> v a cycle)
+        # i.e., is u reachable from v?
+        if self._is_reachable(v, u):
+            raise DependencyViolationError(f"Dependency {u} -> {v} creates a cycle.")
+
+        self.dependencies[u].add(v)
+        # Ensure v exists in graph keys
+        if v not in self.dependencies:
+            self.dependencies[v] = set()

@@ -25,9 +25,7 @@ class UnsatCoreRepairScheme(RepairScheme):
         Repairs the candidate functions based on a checking failure.
         """
         if not suspects:
-            # TODO -- should throw an error.
-            logger.error("Error: No suspects found but verification failed.")
-            return candidates
+            raise RuntimeError("No suspects found but verification failed.")
 
         # 2. Repair (Manthan Logic)
         repaired = []

@@ -1,14 +1,16 @@
 import pytest
 from typing import List, Tuple
 from src.instance import Instance
-from src.dependency_schemes.trivial import TrivialDependencyScheme
+from src.dependency_schemes.trivial_inter_block import TrivialInterBlockDependencyScheme
 
 
 class MockQBFInstance(Instance):
     def __init__(self, quantifiers: List[Tuple[str, List[int]]]):
         # Calculate num_vars from quantifiers
         num_vars = sum(len(vars) for _, vars in quantifiers)
-        super().__init__(num_vars, 0, quantifiers, [], TrivialDependencyScheme)
+        super().__init__(
+            num_vars, 0, quantifiers, [], TrivialInterBlockDependencyScheme
+        )
 
 
 def test_instance_initialization_success():
@@ -50,6 +52,11 @@ def test_instance_validation_var_mismatch():
         def __init__(self, instance):
             pass
 
-    # Claim 2 vars, provide 1
-    with pytest.raises(ValueError, match="Number of variables"):
-        Instance(2, 0, quantifiers, clauses, MockScheme)
+    # Claim 2 vars, provide 1 (var 1). Var 2 is missing.
+    # It should be added to existential block.
+    inst = Instance(2, 0, quantifiers, clauses, MockScheme)
+    
+    # Check that variable 2 was added
+    existential_vars = inst.get_existential_vars()
+    assert 2 in existential_vars
+    assert inst.quantifiers == [("e", [1, 2])]

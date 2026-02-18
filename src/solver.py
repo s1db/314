@@ -26,6 +26,8 @@ class Solver:
         max_iterations: int = 1000,
         cert_formats: List[str] | None = None,
         error_formula_cls: Type[ErrorFormula] = BFnSErrorFormula,
+        dependency_scheme_cls: Type = LearnedDependencyScheme,
+        guesser_cls: Type = ManthanGuesser,
     ):
 
         self.logger = logging.getLogger(__name__)
@@ -38,7 +40,7 @@ class Solver:
         self.logger.info(f"Parsing instance: {instance_path}")
         # Pass the desired dependency scheme class to the parser
         self.instance: Instance = QBFParser.from_file(
-            instance_path, dependency_scheme_class=LearnedDependencyScheme
+            instance_path, dependency_scheme_class=dependency_scheme_cls
         )
 
         self.logger.info(
@@ -56,7 +58,7 @@ class Solver:
 
         self.sampler = UniformSampler(all_vars, self.instance.clauses)
         self.function_manager = FunctionManager()
-        self.learner = ManthanGuesser()
+        self.learner = guesser_cls()
 
         self.error_formula = error_formula_cls()
 
@@ -83,16 +85,9 @@ class Solver:
             self.instance, samples, self.function_manager, self.dep_scheme
         )
 
-        for y, func in self.candidates.items():
-            self.logger.info(f"Learned candidate for {y}: {func}")
-            # IMPORTANT: Register the learned dependencies!
-            try:
-                self.dep_scheme.update_dependencies(y, func.support)
-            except Exception as e:
-                self.logger.warning(
-                    f"Initial candidate for {y} violates dependencies: {e}. Clearing support."
-                )
-                pass
+        # IMPORTANT: Register the learned dependencies!
+        # The dependency scheme implementation determines if updates are allowed.
+        self.dep_scheme.register_candidates(self.candidates, self.logger)
 
         # Phase 3: Verification Loop
         self.logger.info("Entering verification loop...")
@@ -120,9 +115,16 @@ class Solver:
             suspects = self.fl_scheme.localize(self.candidates, assignment)
 
             # 3. Repair
-            self.candidates = self.repair_scheme.repair(
-                self.candidates, assignment, suspects
-            )
+            try:
+                self.candidates = self.repair_scheme.repair(
+                    self.candidates, assignment, suspects
+                )
+            except RuntimeError as e:
+                if "No suspects found" in str(e):
+                    self.logger.warning(f"Repair failed: {e}.")
+                    print("s False")
+                    return
+                raise e
 
         self.logger.warning("Max iterations reached. Stopping.")
         print("s UNKNOWN")

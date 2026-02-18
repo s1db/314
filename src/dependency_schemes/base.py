@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Set, Dict, Optional, List
+from typing import Set, Dict, Optional, List, TYPE_CHECKING
 from src.instance import Instance
+
+if TYPE_CHECKING:
+    from src.candidate_function import CandidateFunction
 
 
 class DependencyViolationError(Exception):
@@ -20,12 +23,14 @@ class DependencyScheme(ABC):
         self.dependencies: Dict[int, Set[int]] = {}
         self.potential_dependencies: Dict[int, Set[int]] = {}
         self.allowed_dependencies: Dict[int, Set[int]] = {}
+        self.var_to_block_idx: Dict[int, int] = {}
 
         dependencies = set()
-        for quantifier_block in self.instance.quantifiers:
-            dependencies.update(quantifier_block[1])
-            for var in quantifier_block[1]:
+        for idx, (q_type, vars_list) in enumerate(self.instance.quantifiers):
+            dependencies.update(vars_list)
+            for var in vars_list:
                 self.allowed_dependencies[var] = dependencies.copy()
+                self.var_to_block_idx[var] = idx
 
         self.compute_potential_dependencies()
         self.compute()
@@ -197,44 +202,45 @@ class DependencyScheme(ABC):
     def get_allowed_variables(self, target_variable: int) -> Set[int]:
         """
         Returns the set of variables that `target_variable` is allowed to depend on.
+        Filters out variables that already depend on `target_variable` to prevent cycles.
         """
-        return self.allowed_dependencies[target_variable]
+        initial_allowed = self.allowed_dependencies.get(target_variable, set())
+        safe_allowed = set()
+
+        target_block_idx = self.var_to_block_idx.get(target_variable, -1)
+
+        for candidate in initial_allowed:
+            candidate_block_idx = self.var_to_block_idx.get(candidate, -1)
+
+            # If candidate is in a future block (shouldn't happen with allowed_dependencies logic, but strictly safe)
+            if candidate_block_idx > target_block_idx:
+                continue
+
+            # If candidate is in a previous block, effective graph is DAG respecting blocks, so no cycle possible
+            # UNLESS the graph is already broken. Standard/Triangle schemes respect block order.
+            if candidate_block_idx < target_block_idx:
+                safe_allowed.add(candidate)
+                continue
+
+            # Same block peers: Check reachability to avoid cycles (u -> v and v -> u)
+            if not self._is_reachable(candidate, target_variable):
+                safe_allowed.add(candidate)
+
+        return safe_allowed
 
     def update_dependencies(self, target_variable: int, used_variables: Set[int]):
         """
-        Updates the dependency scheme
+        Updates the dependency scheme.
+        Default implementation is a no-op for static schemes.
+        Override in dynamic schemes (e.g. LearnedDependencyScheme) to perform updates.
         """
-        # 1. Validation against scheme policy
-        allowed = self.get_allowed_variables(target_variable)
-        invalid = used_variables - allowed
-        if invalid:
-            raise DependencyViolationError(
-                f"Variable {target_variable} depends on forbidden variables: {invalid}. "
-                f"Valid scope: {allowed}"
-            )
+        pass
 
-        # 2. Update Graph structure
-        for dep in used_variables:
-            self._add_edge(target_variable, dep)
-
-    def _add_edge(self, u: int, v: int):
+    def register_candidates(
+        self, candidates: Dict[int, "CandidateFunction"], logger=None
+    ):
         """
-        Adds dependency u -> v (u depends on v).
-        Checks for cycles immediately.
+        Registers candidates and updates dependencies if necessary.
+        Default implementation is a no-op.
         """
-        if u not in self.dependencies:
-            self.dependencies[u] = set()
-
-        # If edge already exists, skip
-        if v in self.dependencies[u]:
-            return
-
-        # Check if v depends on u (which would make u -> v a cycle)
-        # i.e., is u reachable from v?
-        if self._is_reachable(v, u):
-            raise DependencyViolationError(f"Dependency {u} -> {v} creates a cycle.")
-
-        self.dependencies[u].add(v)
-        # Ensure v exists in graph keys
-        if v not in self.dependencies:
-            self.dependencies[v] = set()
+        pass

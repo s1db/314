@@ -34,3 +34,5 @@ checkers/checkSkolem
 *.qdimacs
 *.cnf
 *.dot
+
+.DS_Store

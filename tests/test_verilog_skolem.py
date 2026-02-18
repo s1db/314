@@ -13,11 +13,13 @@ class TestVerilogSkolem:
     def simple_instance(self):
         # 2 Universal (x1, x2), 1 Existential (y3)
         # 2 Universal (x1, x2), 1 Existential (y3)
-        from src.dependency_schemes.trivial import TrivialDependencyScheme
+        from src.dependency_schemes.trivial_inter_block import (
+            TrivialInterBlockDependencyScheme,
+        )
 
         quantifiers = [("a", [1, 2]), ("e", [3])]
         # No clauses needed for skolem generation test
-        inst = Instance(3, 0, quantifiers, [], TrivialDependencyScheme)
+        inst = Instance(3, 0, quantifiers, [], TrivialInterBlockDependencyScheme)
         return inst
 
     def test_simple_output(self, manager, simple_instance, tmp_path):
@@ -43,10 +45,12 @@ class TestVerilogSkolem:
     def test_dag_reuse(self, manager, tmp_path):
         # 4 Inputs, 2 Outputs
         # 4 Inputs, 2 Outputs
-        from src.dependency_schemes.trivial import TrivialDependencyScheme
+        from src.dependency_schemes.trivial_inter_block import (
+            TrivialInterBlockDependencyScheme,
+        )
 
         quantifiers = [("a", [1, 2, 3, 4]), ("e", [5, 6])]
-        inst = Instance(6, 0, quantifiers, [], TrivialDependencyScheme)
+        inst = Instance(6, 0, quantifiers, [], TrivialInterBlockDependencyScheme)
 
         # Shared node: M = x1 | x2 (OR node)
         # o5 = M & x3 (AND node)
@@ -89,10 +93,12 @@ class TestVerilogSkolem:
         assert "assign 3 = 1'b1;" in content
 
     def test_io_ports(self, manager, tmp_path):
-        from src.dependency_schemes.trivial import TrivialDependencyScheme
+        from src.dependency_schemes.trivial_inter_block import (
+            TrivialInterBlockDependencyScheme,
+        )
 
         quantifiers = [("a", [1, 2]), ("e", [3, 4])]
-        inst = Instance(4, 0, quantifiers, [], TrivialDependencyScheme)
+        inst = Instance(4, 0, quantifiers, [], TrivialInterBlockDependencyScheme)
 
         candidates = {3: manager.get_lit(1), 4: manager.get_lit(2)}
 
@@ -115,10 +121,12 @@ class TestVerilogSkolem:
         assert "assign 3 = ~1;" in content
 
     def test_disjoint_components(self, manager, tmp_path):
-        from src.dependency_schemes.trivial import TrivialDependencyScheme
+        from src.dependency_schemes.trivial_inter_block import (
+            TrivialInterBlockDependencyScheme,
+        )
 
         quantifiers = [("a", [1, 2]), ("e", [3, 4])]
-        inst = Instance(4, 0, quantifiers, [], TrivialDependencyScheme)
+        inst = Instance(4, 0, quantifiers, [], TrivialInterBlockDependencyScheme)
 
         c3 = manager.get_lit(1)
         c4 = manager.get_lit(2)
@@ -141,9 +149,13 @@ class TestVerilogSkolem:
             ("a", list(range(1, num_inputs + 1))),
             ("e", [num_inputs + 1]),
         ]
-        from src.dependency_schemes.trivial import TrivialDependencyScheme
+        from src.dependency_schemes.trivial_inter_block import (
+            TrivialInterBlockDependencyScheme,
+        )
 
-        inst = Instance(num_inputs + 1, 0, quantifiers, [], TrivialDependencyScheme)
+        inst = Instance(
+            num_inputs + 1, 0, quantifiers, [], TrivialInterBlockDependencyScheme
+        )
 
         current_layer = [manager.get_lit(i) for i in range(1, num_inputs + 1)]
 

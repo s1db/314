@@ -14,12 +14,16 @@ class TestFaultLocalization:
     def simple_instance(self):
         # QBF: Exists y1. (x1 or y1)
         # We model this manually.
-        from src.dependency_schemes.trivial import TrivialDependencyScheme
+        from src.dependency_schemes.trivial_inter_block import (
+            TrivialInterBlockDependencyScheme,
+        )
 
         quantifiers = [("a", [1]), ("e", [2])]
         clauses = [[1, 2]]  # x1=1, y1=2
 
-        instance = Instance(2, 1, quantifiers, clauses, TrivialDependencyScheme)
+        instance = Instance(
+            2, 1, quantifiers, clauses, TrivialInterBlockDependencyScheme
+        )
         return instance
 
     def test_maxsat_simple_unsat(self, manager, simple_instance):
@@ -78,7 +82,9 @@ class TestFaultLocalization:
         # So MaxSAT should break y2=0 constraint.
         # Thus y2 should be the fault.
 
-        from src.dependency_schemes.trivial import TrivialDependencyScheme
+        from src.dependency_schemes.trivial_inter_block import (
+            TrivialInterBlockDependencyScheme,
+        )
 
         clauses = [[1, 2], [-1, -2]]  # y1=1, y2=2
         quantifiers = [("e", [1, 2])]
@@ -89,7 +95,9 @@ class TestFaultLocalization:
         # So quantified_vars = 2.
         # Instance(2, 2, ...) -> num_vars=2. Matches.
 
-        instance = Instance(2, 2, quantifiers, clauses, TrivialDependencyScheme)
+        instance = Instance(
+            2, 2, quantifiers, clauses, TrivialInterBlockDependencyScheme
+        )
 
         scheme = LexMaxSATScheme(instance)
 

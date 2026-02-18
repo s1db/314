@@ -51,8 +51,10 @@ class ManthanGuesser(BaseCandidateFunctionGuesser):
 
         # Iterate through each existential variable
         for target_y in y_vars:
-            # Use potential dependencies (preceding vars in QBF prefix)
-            allowed_vars = dependency_scheme.potential_dependencies.get(target_y, set())
+            # Use allowed variables (predecessors + allowed peers)
+            # This implements the Manthan design where peers in the same block can be dependencies
+            # if they don't depend on the current variable (preventing cycles).
+            allowed_vars = dependency_scheme.get_allowed_variables(target_y)
 
             # Map features to columns in data_matrix
             # We need a list of (col_idx, var_id)
@@ -64,34 +66,44 @@ class ManthanGuesser(BaseCandidateFunctionGuesser):
                     feature_cols.append(var_to_col[var])
                     feature_map.append(var)
 
+            y_col_idx = var_to_col[target_y]
+            y = data_matrix[:, y_col_idx]
+
             if not feature_cols:
-                # Fallback: Constant function? Or use X?
-                # If no potential dependencies (e.g., first E-block),
-                # it should depend on previous X-vars.
-                # If potential_dependencies is correct, it includes X-vars.
-                # If empty, it means no previous variables.
-                pass
-
-            X = data_matrix[:, feature_cols]
-            y = data_matrix[:, var_to_col[target_y]]
-
-            # 2. Learn Decision Tree
-            try:
-                clf = SklearnDTC(criterion="gini", random_state=42)
-                clf.fit(X, y)
-
-                # 3. Extract Function & Dependencies
-                candidate_func, used_vars = self._extract_paths_and_deps(
-                    clf.tree_, clf.classes_, feature_map, function_manager
+                # Fallback: Learn a constant function if no features are available
+                # This can happen for variables in the first quantifier block if it's existential
+                # and no peers are available/selected yet.
+                logger.warning(
+                    f"No allowed features for variable {target_y}. Learning constant function."
                 )
 
-                candidates[target_y] = candidate_func
+                # Check for majority class
+                # 1s count
+                count_ones = np.sum(y)
+                count_zeros = len(y) - count_ones
 
-                dependency_scheme.verify_dependencies()
+                if count_ones > count_zeros:
+                    candidates[target_y] = function_manager.get_true()
+                else:
+                    candidates[target_y] = function_manager.get_false()
 
-            except Exception as e:
-                logger.error(f"Failed to learn candidate for {target_y}: {e}")
-                candidates[target_y] = function_manager.get_or([])  # False
+                # No dependencies to update for a constant function
+                continue
+
+            X = data_matrix[:, feature_cols]
+
+            clf = SklearnDTC(criterion="gini", random_state=42)
+            clf.fit(X, y)
+
+            # 3. Extract Function & Dependencies
+            candidate_func, used_vars = self._extract_paths_and_deps(
+                clf.tree_, clf.classes_, feature_map, function_manager
+            )
+
+            candidates[target_y] = candidate_func
+
+            # Update dependencies with what strictly the decision tree used
+            dependency_scheme.update_dependencies(target_y, used_vars)
 
         return candidates
 

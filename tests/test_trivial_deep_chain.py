@@ -1,6 +1,6 @@
 import sys
 from src.instance_parsers.qbf import QBFParser
-from src.dependency_schemes.trivial import TrivialDependencyScheme
+from src.dependency_schemes.trivial_inter_block import TrivialInterBlockDependencyScheme
 import os
 
 
@@ -15,7 +15,7 @@ def test_deep_chain_dependencies():
     instance = QBFParser.from_file(test_file)
 
     # Run the Trivial Dependency Scheme
-    scheme = TrivialDependencyScheme(instance)
+    scheme = TrivialInterBlockDependencyScheme(instance)
 
     # Assertions based on "Cumulative" dependencies (all previous variables)
 

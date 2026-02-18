@@ -40,14 +40,24 @@ class ErrorFormula(ABC):
         # 2. Generate Candidate Module (SKOLEM)
         # Defines Y' <-> Psi(X)
         y_vars_set = set(y_vars)
-        conv_candidates = {
-            y: self._candidate_to_verilog(candidates[y], y_vars_set)
-            for y in y_vars
-            if y in candidates
-        }
-        # Ensure all y_vars are present, default to 0 if not
+
+        # Prepare for splitting to avoid huge lines
+        aux_lines = []
+        wire_counter = [0]
+        conv_candidates = {}
+
+        for y in y_vars:
+            if y in candidates:
+                conv_candidates[y] = self._candidate_to_verilog(
+                    candidates[y], y_vars_set, aux_lines, wire_counter
+                )
+            else:
+                conv_candidates[y] = "0"
+
+        extra_body = "".join(aux_lines)
+
         skolem_verilog = VerilogGenerator.functions_to_verilog(
-            conv_candidates, "SKOLEM", x_vars, y_vars
+            conv_candidates, "SKOLEM", x_vars, y_vars, extra_body=extra_body
         )
 
         # 3. Generate MAIN Module
@@ -77,6 +87,7 @@ class ErrorFormula(ABC):
         import tempfile
         from src.bindings.abc_wrapper import AbcInterface  # type: ignore
 
+        # Create temporary file for Verilog
         # Create temporary file for Verilog
         with tempfile.NamedTemporaryFile(suffix=".v", delete=False, mode="w") as tmp:
             tmp_path = tmp.name
@@ -140,10 +151,16 @@ class ErrorFormula(ABC):
         """
         pass
 
-    def _candidate_to_verilog(self, func: CandidateFunction, y_vars_set: set) -> str:
+    def _candidate_to_verilog(
+        self,
+        func: CandidateFunction,
+        y_vars_set: set,
+        aux_lines: List[str],
+        wire_counter: List[int],
+    ) -> str:
         """
         Recursively converts a CandidateFunction to a Verilog expression string.
-        y_vars_set: Set of integer IDs for Y variables.
+        Splits complex expressions into auxiliary wires to prevent line length issues.
         """
         if func.node_type == NodeType.LITERAL:
             assert func.value is not None
@@ -151,30 +168,37 @@ class ErrorFormula(ABC):
             prefix = "ip" if val in y_vars_set else "v"
             return f"{prefix}{val}" if func.value > 0 else f"~{prefix}{val}"
 
-        elif func.node_type == NodeType.AND:
-            if not func.children:
-                return "1"  # Empty AND is True
-            children_str = [
-                self._candidate_to_verilog(c, y_vars_set) for c in func.children
-            ]
-            return f"({' & '.join(children_str)})"
-
-        elif func.node_type == NodeType.OR:
-            if not func.children:
-                return "0"  # Empty OR is False
-            children_str = [
-                self._candidate_to_verilog(c, y_vars_set) for c in func.children
-            ]
-            return f"({' | '.join(children_str)})"
-
-        elif func.node_type == NodeType.ITE:
-            # ITE(c, t, e) = (c & t) | (~c & e)
-            c = self._candidate_to_verilog(func.children[0], y_vars_set)
-            t = self._candidate_to_verilog(func.children[1], y_vars_set)
-            e = self._candidate_to_verilog(func.children[2], y_vars_set)
-            return f"( ({c} & {t}) | (~{c} & {e}) )"
-
         elif func.node_type == NodeType.CONSTANT:
             return "1" if func.value == 1 else "0"
 
-        return "0"
+        # Complex nodes: AND, OR, ITE
+        # 1. Recurse
+        children_wires = []
+        if func.children:
+            for c in func.children:
+                children_wires.append(
+                    self._candidate_to_verilog(c, y_vars_set, aux_lines, wire_counter)
+                )
+
+        # 2. Construct expression
+        expr = ""
+        if func.node_type == NodeType.AND:
+            if not children_wires:
+                return "1"
+            expr = f"({' & '.join(children_wires)})"
+        elif func.node_type == NodeType.OR:
+            if not children_wires:
+                return "0"
+            expr = f"({' | '.join(children_wires)})"
+        elif func.node_type == NodeType.ITE:
+            c, t, e = children_wires
+            expr = f"( ({c} & {t}) | (~{c} & {e}) )"
+
+        # 3. Create auxiliary wire
+        wire_name = f"split_{wire_counter[0]}"
+        wire_counter[0] += 1
+
+        assign_stmt = f"  wire {wire_name};\n  assign {wire_name} = {expr};\n"
+        aux_lines.append(assign_stmt)
+
+        return wire_name
