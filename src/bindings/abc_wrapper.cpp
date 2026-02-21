@@ -10,9 +10,9 @@
             ]
         ],
         "depends": [
-            "/Users/sid/Documents/314/src/bindings/abc_lib/src/base/abc/abc.h",
-            "/Users/sid/Documents/314/src/bindings/abc_lib/src/base/cmd/cmd.h",
-            "/Users/sid/Documents/314/src/bindings/abc_lib/src/base/main/main.h"
+            "/Users/sid/Documents/godel1/src/bindings/abc_lib/src/base/abc/abc.h",
+            "/Users/sid/Documents/godel1/src/bindings/abc_lib/src/base/cmd/cmd.h",
+            "/Users/sid/Documents/godel1/src/bindings/abc_lib/src/base/main/main.h"
         ],
         "extra_compile_args": [
             "-fPIC",
@@ -22,7 +22,7 @@
             "-Wno-narrowing"
         ],
         "include_dirs": [
-            "/Users/sid/Documents/314/src/bindings/abc_lib/src"
+            "/Users/sid/Documents/godel1/src/bindings/abc_lib/src"
         ],
         "language": "c++",
         "libraries": [
@@ -32,7 +32,7 @@
             "pthread"
         ],
         "library_dirs": [
-            "/Users/sid/Documents/314/src/bindings/abc_lib"
+            "/Users/sid/Documents/godel1/src/bindings/abc_lib"
         ],
         "name": "src.bindings.abc_wrapper",
         "sources": [
@@ -2518,9 +2518,9 @@ static __pyx_mstatetype * const __pyx_mstate_global = &__pyx_mstate_global_stati
 /* #### Code section: constant_name_defines ### */
 #define __pyx_kp_u_ __pyx_string_tab[0]
 #define __pyx_kp_u_4f __pyx_string_tab[1]
-#define __pyx_kp_u_ABC_Check_SAT_Counter_example_fo __pyx_string_tab[2]
+#define __pyx_kp_u_ABC_Check_SAT_in __pyx_string_tab[2]
 #define __pyx_kp_u_ABC_Check_UNDECIDED_in __pyx_string_tab[3]
-#define __pyx_kp_u_ABC_Check_UNSAT_Verified_in __pyx_string_tab[4]
+#define __pyx_kp_u_ABC_Check_UNSAT_in __pyx_string_tab[4]
 #define __pyx_kp_u_ABC_could_not_decide_the_problem __pyx_string_tab[5]
 #define __pyx_kp_u_None __pyx_string_tab[6]
 #define __pyx_kp_u_Note_that_Cython_is_deliberately __pyx_string_tab[7]
@@ -2588,7 +2588,7 @@ static __pyx_mstatetype * const __pyx_mstate_global = &__pyx_mstate_global_stati
 #define __pyx_n_u_values __pyx_string_tab[69]
 #define __pyx_n_u_verilog_file __pyx_string_tab[70]
 #define __pyx_n_u_warning __pyx_string_tab[71]
-#define __pyx_kp_b_iso88591_A_1_T_a_1_A_AQ_AQ_AQ_AT_1_wc_5Qd __pyx_string_tab[72]
+#define __pyx_kp_b_iso88591_A_1_T_a_1_A_AQ_AQ_AQ_AT_7_Q_M_1 __pyx_string_tab[72]
 #define __pyx_kp_b_iso88591_A_G7_1_iq __pyx_string_tab[73]
 #define __pyx_kp_b_iso88591_Q __pyx_string_tab[74]
 #define __pyx_int_0 __pyx_number_tab[0]
@@ -3054,8 +3054,8 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
   PyObject *__pyx_t_7 = NULL;
   PyObject *__pyx_t_8 = NULL;
   PyObject *__pyx_t_9 = NULL;
-  int __pyx_t_10;
-  PyObject *__pyx_t_11 = NULL;
+  PyObject *__pyx_t_10 = NULL;
+  int __pyx_t_11;
   int __pyx_t_12;
   PyObject *__pyx_t_13[3];
   int __pyx_t_14;
@@ -3278,46 +3278,9 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
  *             # 1=UNSAT (Property holds), 0=SAT (Property fails), -1=UNDEC
  *             status = Abc_FrameReadProbStatus(self._frame)             # <<<<<<<<<<<<<<
  * 
- *             pCex = NULL
+ *         cdef Abc_Cex_t * pCex = NULL
 */
           __pyx_v_status = Abc_FrameReadProbStatus(__pyx_v_self->_frame);
-
-          /* "src/bindings/abc_wrapper.pyx":89
- *             status = Abc_FrameReadProbStatus(self._frame)
- * 
- *             pCex = NULL             # <<<<<<<<<<<<<<
- *             if status == 0:
- *                  pCex = <Abc_Cex_t *>Abc_FrameReadCex(self._frame)
-*/
-          __pyx_v_pCex = NULL;
-
-          /* "src/bindings/abc_wrapper.pyx":90
- * 
- *             pCex = NULL
- *             if status == 0:             # <<<<<<<<<<<<<<
- *                  pCex = <Abc_Cex_t *>Abc_FrameReadCex(self._frame)
- * 
-*/
-          __pyx_t_10 = (__pyx_v_status == 0);
-          if (__pyx_t_10) {
-
-            /* "src/bindings/abc_wrapper.pyx":91
- *             pCex = NULL
- *             if status == 0:
- *                  pCex = <Abc_Cex_t *>Abc_FrameReadCex(self._frame)             # <<<<<<<<<<<<<<
- * 
- *         end_time = time.time()
-*/
-            __pyx_v_pCex = ((Abc_Cex_t *)Abc_FrameReadCex(__pyx_v_self->_frame));
-
-            /* "src/bindings/abc_wrapper.pyx":90
- * 
- *             pCex = NULL
- *             if status == 0:             # <<<<<<<<<<<<<<
- *                  pCex = <Abc_Cex_t *>Abc_FrameReadCex(self._frame)
- * 
-*/
-          }
 
           /* "src/bindings/abc_wrapper.pyx":61
  * 
@@ -3344,15 +3307,15 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
           __Pyx_XGOTREF(__pyx_t_4);
           __pyx_t_3 = PyTuple_Pack(3, __pyx_t_1, __pyx_t_2, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 61, __pyx_L9_except_error)
           __Pyx_GOTREF(__pyx_t_3);
-          __pyx_t_11 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_3, NULL);
+          __pyx_t_10 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_3, NULL);
           __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
           __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-          if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 61, __pyx_L9_except_error)
-          __Pyx_GOTREF(__pyx_t_11);
-          __pyx_t_10 = __Pyx_PyObject_IsTrue(__pyx_t_11);
-          __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-          if (__pyx_t_10 < (0)) __PYX_ERR(0, 61, __pyx_L9_except_error)
-          __pyx_t_12 = (!__pyx_t_10);
+          if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 61, __pyx_L9_except_error)
+          __Pyx_GOTREF(__pyx_t_10);
+          __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_10);
+          __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
+          if (__pyx_t_11 < (0)) __PYX_ERR(0, 61, __pyx_L9_except_error)
+          __pyx_t_12 = (!__pyx_t_11);
           if (unlikely(__pyx_t_12)) {
             __Pyx_GIVEREF(__pyx_t_1);
             __Pyx_GIVEREF(__pyx_t_2);
@@ -3393,15 +3356,52 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
       }
       __pyx_L6:;
     }
-    goto __pyx_L17;
+    goto __pyx_L16;
     __pyx_L3_error:;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     goto __pyx_L1_error;
-    __pyx_L17:;
+    __pyx_L16:;
+  }
+
+  /* "src/bindings/abc_wrapper.pyx":89
+ *             status = Abc_FrameReadProbStatus(self._frame)
+ * 
+ *         cdef Abc_Cex_t * pCex = NULL             # <<<<<<<<<<<<<<
+ *         if status == 0:
+ *              pCex = <Abc_Cex_t *>Abc_FrameReadCex(self._frame)
+*/
+  __pyx_v_pCex = NULL;
+
+  /* "src/bindings/abc_wrapper.pyx":90
+ * 
+ *         cdef Abc_Cex_t * pCex = NULL
+ *         if status == 0:             # <<<<<<<<<<<<<<
+ *              pCex = <Abc_Cex_t *>Abc_FrameReadCex(self._frame)
+ * 
+*/
+  __pyx_t_12 = (__pyx_v_status == 0);
+  if (__pyx_t_12) {
+
+    /* "src/bindings/abc_wrapper.pyx":91
+ *         cdef Abc_Cex_t * pCex = NULL
+ *         if status == 0:
+ *              pCex = <Abc_Cex_t *>Abc_FrameReadCex(self._frame)             # <<<<<<<<<<<<<<
+ * 
+ *         end_time = time.time()
+*/
+    __pyx_v_pCex = ((Abc_Cex_t *)Abc_FrameReadCex(__pyx_v_self->_frame));
+
+    /* "src/bindings/abc_wrapper.pyx":90
+ * 
+ *         cdef Abc_Cex_t * pCex = NULL
+ *         if status == 0:             # <<<<<<<<<<<<<<
+ *              pCex = <Abc_Cex_t *>Abc_FrameReadCex(self._frame)
+ * 
+*/
   }
 
   /* "src/bindings/abc_wrapper.pyx":93
- *                  pCex = <Abc_Cex_t *>Abc_FrameReadCex(self._frame)
+ *              pCex = <Abc_Cex_t *>Abc_FrameReadCex(self._frame)
  * 
  *         end_time = time.time()             # <<<<<<<<<<<<<<
  *         duration = end_time - start_time
@@ -3452,7 +3452,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
  *         duration = end_time - start_time
  * 
  *         if status == 1:             # <<<<<<<<<<<<<<
- *             logger.info(f"ABC Check: UNSAT (Verified) in {duration:.4f}s")
+ *             logger.info(f"ABC Check: UNSAT in {duration:.4f}s")
  *             return None # Verified!
 */
   __pyx_t_12 = (__pyx_v_status == 1);
@@ -3461,7 +3461,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
     /* "src/bindings/abc_wrapper.pyx":97
  * 
  *         if status == 1:
- *             logger.info(f"ABC Check: UNSAT (Verified) in {duration:.4f}s")             # <<<<<<<<<<<<<<
+ *             logger.info(f"ABC Check: UNSAT in {duration:.4f}s")             # <<<<<<<<<<<<<<
  *             return None # Verified!
  * 
 */
@@ -3469,10 +3469,10 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
     __Pyx_INCREF(__pyx_t_3);
     __pyx_t_2 = __Pyx_PyObject_Format(__pyx_v_duration, __pyx_mstate_global->__pyx_kp_u_4f); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 97, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_13[0] = __pyx_mstate_global->__pyx_kp_u_ABC_Check_UNSAT_Verified_in;
+    __pyx_t_13[0] = __pyx_mstate_global->__pyx_kp_u_ABC_Check_UNSAT_in;
     __pyx_t_13[1] = __pyx_t_2;
     __pyx_t_13[2] = __pyx_mstate_global->__pyx_n_u_s;
-    __pyx_t_1 = __Pyx_PyUnicode_Join(__pyx_t_13, 3, 31 + __Pyx_PyUnicode_GET_LENGTH(__pyx_t_2) + 1, 127 | __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_2));
+    __pyx_t_1 = __Pyx_PyUnicode_Join(__pyx_t_13, 3, 20 + __Pyx_PyUnicode_GET_LENGTH(__pyx_t_2) + 1, 127 | __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_2));
     if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 97, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
@@ -3489,7 +3489,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
 
     /* "src/bindings/abc_wrapper.pyx":98
  *         if status == 1:
- *             logger.info(f"ABC Check: UNSAT (Verified) in {duration:.4f}s")
+ *             logger.info(f"ABC Check: UNSAT in {duration:.4f}s")
  *             return None # Verified!             # <<<<<<<<<<<<<<
  * 
  *         if status == 0:
@@ -3502,7 +3502,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
  *         duration = end_time - start_time
  * 
  *         if status == 1:             # <<<<<<<<<<<<<<
- *             logger.info(f"ABC Check: UNSAT (Verified) in {duration:.4f}s")
+ *             logger.info(f"ABC Check: UNSAT in {duration:.4f}s")
  *             return None # Verified!
 */
   }
@@ -3511,7 +3511,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
  *             return None # Verified!
  * 
  *         if status == 0:             # <<<<<<<<<<<<<<
- *             logger.info(f"ABC Check: SAT (Counter-example found) in {duration:.4f}s")
+ *             logger.info(f"ABC Check: SAT in {duration:.4f}s")
  *             # Failed, get CEX
 */
   __pyx_t_12 = (__pyx_v_status == 0);
@@ -3520,7 +3520,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
     /* "src/bindings/abc_wrapper.pyx":101
  * 
  *         if status == 0:
- *             logger.info(f"ABC Check: SAT (Counter-example found) in {duration:.4f}s")             # <<<<<<<<<<<<<<
+ *             logger.info(f"ABC Check: SAT in {duration:.4f}s")             # <<<<<<<<<<<<<<
  *             # Failed, get CEX
  *             # pCex was retrieved inside suppression block if status==0, but capturing pointer is fine?
 */
@@ -3528,10 +3528,10 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
     __Pyx_INCREF(__pyx_t_1);
     __pyx_t_3 = __Pyx_PyObject_Format(__pyx_v_duration, __pyx_mstate_global->__pyx_kp_u_4f); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 101, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_13[0] = __pyx_mstate_global->__pyx_kp_u_ABC_Check_SAT_Counter_example_fo;
+    __pyx_t_13[0] = __pyx_mstate_global->__pyx_kp_u_ABC_Check_SAT_in;
     __pyx_t_13[1] = __pyx_t_3;
     __pyx_t_13[2] = __pyx_mstate_global->__pyx_n_u_s;
-    __pyx_t_2 = __Pyx_PyUnicode_Join(__pyx_t_13, 3, 42 + __Pyx_PyUnicode_GET_LENGTH(__pyx_t_3) + 1, 127 | __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_3));
+    __pyx_t_2 = __Pyx_PyUnicode_Join(__pyx_t_13, 3, 18 + __Pyx_PyUnicode_GET_LENGTH(__pyx_t_3) + 1, 127 | __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_3));
     if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 101, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -3689,7 +3689,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
  *             return None # Verified!
  * 
  *         if status == 0:             # <<<<<<<<<<<<<<
- *             logger.info(f"ABC Check: SAT (Counter-example found) in {duration:.4f}s")
+ *             logger.info(f"ABC Check: SAT in {duration:.4f}s")
  *             # Failed, get CEX
 */
   }
@@ -4698,33 +4698,33 @@ static int __Pyx_InitCachedConstants(__pyx_mstatetype *__pyx_mstate) {
 static int __Pyx_InitConstants(__pyx_mstatetype *__pyx_mstate) {
   CYTHON_UNUSED_VAR(__pyx_mstate);
   {
-    const struct { const unsigned int length: 9; } index[] = {{1},{3},{42},{24},{31},{47},{4},{179},{1},{8},{7},{6},{2},{9},{50},{13},{28},{14},{12},{30},{32},{22},{24},{20},{18},{8},{9},{18},{9},{7},{8},{8},{9},{8},{8},{9},{12},{1},{4},{6},{13},{5},{6},{7},{8},{10},{8},{4},{3},{11},{12},{10},{17},{13},{11},{1},{4},{12},{10},{12},{19},{24},{18},{10},{6},{6},{22},{8},{4},{6},{12},{7},{309},{27},{9}};
-    #if (CYTHON_COMPRESS_STRINGS) == 3 && __PYX_LIMITED_VERSION_HEX >= 0x030e0000 /* compression: zstd (910 bytes) */
-const char* const cstring = "(\265/\375`\207\004%\034\000\206\265\25590\223:\300\300\217\272\241j\002^1\352#{E\257\030z\247\310\356$\222l\221\214\\\010\331I\312\262g\366\337c\250\016\261\376W3`F\307\375\216a\303\254\231\271\217$5\n\225\000\216\000\224\000\022o\372\311\374\322\272c\t\346\227\354Z\244\266\375{\275\304\367\275\013r\262\313r\373\336\324\253\034\270\345\376\3527\256\245\305T\226FJ\0370*0\022k\377z\365o\371\362\374\251v\356zn\345\276\022g\325\277L\362\351\347\027\307\371E\343 }H\353X\203\357zC\256\334\343\262\376\244\253^\272\275\325\255\374\214\245\365\300\\\375vW{\315I\345\324bR9\275\320H|%\207\355\244{\337\212\272\374C\373c0\2336\344\314&#Kp\252\253L\322\224\262u%M\013\367\301\254s\325\362\255\370\265i\3471\357\362\227\371\365\236\\/\2309-\246\253U\256\023\203\372\351\236\365\351\357\367=g\325\274\322\256\245r\333\211W\rf\375\333\304\365\3724\355\337Gu\316\254\034\005\331\026_\016\244\352-S\331\273\332[\323\322\277\370\3269\245Go\353\352\377\300\031\203V\316\351\025\264\256\347\224\357\201\264s+3\266\373\326\024v\3678\272\257\365\317xZKQ4\337\036]\361\326\375\352\372Z\251\221\302w\342|\237~\306\230j\274\3571\214\005\200\202 *F\2103aDh$\305F\261\003q\"t0\000h\010\332v\260\2469\356\335nn\007=\332\232\277\375\347\324\332\037\314\366\367Tm\252\301\327\364\367\336\256\277\017\334\332\3664\255\352=;\317\367\236\036\005Y_\376\\n\372(v\017\264y\205/]\315\351\355\225\377\235\373Noe\375\335\334\341{\247\366T*\273\274\247\346\254\030\354\376\272\346\3649}u\177Z\354\032\264\333\377\305M\273\2528\225r^\251\376\211\357t|\275\272\377r\323\345u;\016\250\260\003v00\006\354\260x\356\210a\306 \"\262\204\020!\240m\207\344\301\026B\343\250gC&\222\221&f4T\301\030\014\200\266\030)\306\"V@\214\224G\025\303\210\211b',\261$\216D\232\220\340\200B\001@\"h\023+\"F\222( \206\204\017\r\243\250gF\266\311J\0303\235\220B\304\nM!\010k\370\261\361\331|N\343\310g\243G\324CB1c\205\031\241C\302\210\n/B\021\030B\010\210\212)\"\311\270\211`X\n\037B@\243\036+C\311B2f\n\"\205h\024\2115\314\2011$\214\244\360!\001H$\233\361""\210\230IX\004\241BA(\236\215g\212\233\230\020\212\024H\001X( \2040dW\036\341Hijjh\n\n\323\034\320\212\3308\204x\336\010~+H\025\216\2221,\200\264g\002\306\256R\341\301J\345\302*\245gJ\301\274\0071\250_;\000gO\\\242#\315\230\260i\360\025'\240\331\273}aM\0028wAH\272D\335\342\226\010\221A\013\224\014\250#\350\313\344\374\243\221%\312\226@Z\006\204\205\266\002\312\022\320f.\270Q$\274\206\n\322\200\214\025\215\357>\037`U\327\035\247\r\264)(ss'\266\304Fl\001$\316r!l\254\332A#\226\217\351o\361E\212+\2728;\270\020q\266c\213;3\2111\300J\330R\n)(0\n\272\214\220\0221y[\323{,\204}:M\226\016\366\236";
-    PyObject *data = __Pyx_DecompressString(cstring, 910, 3);
+    const struct { const unsigned int length: 9; } index[] = {{1},{3},{18},{24},{20},{47},{4},{179},{1},{8},{7},{6},{2},{9},{50},{13},{28},{14},{12},{30},{32},{22},{24},{20},{18},{8},{9},{18},{9},{7},{8},{8},{9},{8},{8},{9},{12},{1},{4},{6},{13},{5},{6},{7},{8},{10},{8},{4},{3},{11},{12},{10},{17},{13},{11},{1},{4},{12},{10},{12},{19},{24},{18},{10},{6},{6},{22},{8},{4},{6},{12},{7},{309},{27},{9}};
+    #if (CYTHON_COMPRESS_STRINGS) == 3 && __PYX_LIMITED_VERSION_HEX >= 0x030e0000 /* compression: zstd (875 bytes) */
+const char* const cstring = "(\265/\375`d\004\r\033\000F4\2508 \223\332\000\234\002\002\245\001\004\001\341f\200P \014\341\240pX\371K\256l\022\031|\261\215R\212\275<D\252\3653,\272\371+\364E\263\321\202J\302\314\220\210xLE\035\220\000\212\000\216\000\331\326\250a\272V^l\177>\276wj\274\353x\365\374\"\376X\335o\334\230\025;\227\250i\377X\037\257}\317n.v8j\327zz\224\333:\352\247\236\3439\326;#i\204\364!\263\"\023o\366\2476\277\216,\317\177f\347\254\3475j\033/>=\253\024\177>\216\361\213c4\216\321G\254~\363~\317\033\021\345\036\207\363\027\375\364\321\253\245^\343\343\033\253\2671UYQq)\255\250\304\334\304k\243\315V\023Kt\250\237J\261\224\262u$M\013\372-'WN\265_\373\033gL5l\351e\351\3319\315\257<F>\265*+\226\214\224\365N\024\nSyw\376\251%\375\371\372]KI5\247\263\313\376\327\205r\333\211\323\274q~m\262b}Z\366\357\233yGRn\202h\323\265\365Z\016\204f\035M\330\263\331U\262\316\267\327R)\2437\255\312\346\377\270\370\356\032\245t\272\253g)\343{{v^#\276U[j\272\356\0367\265\255\376\370\312Z'\212\346\332\233,\256\262O=\021\241\r\030\001\222\215\\\"\327A8\001:\030\0004\374l=7\317\035\367l'\265oo\252\344k\177)s\366\337\270\276\226'=\363k\275?\317\327Z{\376\276\2555\355\331\337\232F\263\226\235\347ZK\271ro\356\324\207\277\225\227\276y\335\333\025\243\256\235()M\327z\032\345o\245\266\322U8\177\026w\327Zi2\231\360\313\273IJzw\367v\345RJ\351R:\312\276\254\327\363\256\332\237\305\311\212\242:trNg~y\255\364k=\0323`G\353`@\026\320\223zY\021C\214A$l\001!@\263\255g\344\265\026@2\221\317\306Dl\202\247\026\203\301ls\215\\-a\005\204l\276N.\014W\310u\222\nI\241(\274\001\t\016(\024\000$~\266\260\"B6\n\005\302\020\360\241A\026\362\261\201m0\022F\214\007\244\010\245\300\022\270[\r0\234\021\370\220 K\301V\257\371\322(b)0\003tH\230\3150%$\221m\341\006I\340\003h6a\030\260\020l$\212\301\200\020\n\262\031\360\002\024i!\200d\001\256\010\232\205`6\036\0211\t\213\237\031\320\317\314k{\311p\013\023\300\220\302\310\205\261\000P\3603\303Q( \2040eW\036\241Ti\020\231\324\024\024\2469\320\024\261A\210\250<hx\273\370\231 \033\016\2211O\000""\315g\n\215}\210\362\010\202\317\030[\302\\Jf\326\203\365\203<\252_;\020gOV\242 \355L\030.\204\220fc\273\030\340lA\234\274\254\362b;\026\"\2156(9P\327\325/\r\242?(+\005\3225 xic\241\034\000\303\314\r\267E\352\227\002d\276h\374\367y.\257?\305\007\221\027\324\217\271qXb%\266\005\362\247v\0076\254v\240\021K\306\364\213\360\025\266HG\260\355X\341\316L:\006\205\022\206\224\302\n\212\211\202\016#d\"\206\261o|\355S\252\363\211\001";
+    PyObject *data = __Pyx_DecompressString(cstring, 875, 3);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #elif (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (1042 bytes) */
-const char* const cstring = "BZh91AY&SYe \264D\000\000f\177\377\357\177\377\305n\357\246\365\277\245\177@\277\377\377\342@@@@@@@@@@@@@\000@\000P\003^\366\033\333s\274\333v\355\343\206\246\204e56\231\r4\320\236\222oE=#\320\203OQ\352mM2=OS\023j\033COTm4\324\365=O\023\321A\244F\212{SM6\223\324b\231\006\215\001\243FM\000\003 \001\243 \032\006\200\320\032\231\031L\224\364\t\232\206\2004\000\000\000\000\000\000\000\000\000\032\230\243\010\232e2mF\214M\000\000\000\000\000\000\000\000\003M\001\246\251\246\231\002\021\232FL\215\001\240\320h\000\000\000\000\000\000\003E\312c\366\256:dpk\200<\275\177}\254\"X\n\004\223\030T\307\241\013G\211b1\021e\177\323\350$\016\022\260\314\017\261\371\\Bp@\241\005\002)\260!Dm\212c\323H\035!V\250_?\000\356\353\304k\246\313\216\332y\r\215\216/\322\320\274\266\3539\303\316M\377V\354\243\251\014b\320\310\314\313d\202\nS\220\217f\340\334\324[cn\323\000\350\016\334\002\312\233\027\244\256\317m\t\317G\023\365\010'!\352,\351I\0275'\307\031\007\320@\367\330\226\226/\037\352\360M\204\335\314o\027R\324P\033\2741\346\036^\246\315\250Ea\037\032 \217\204\002\355\002=\016\033\244\247\247\037\177\252\227\000\363\255r\305\244W0\177 \203f\233\252Hj\002\032\351\306!d\333@\307\232\260\251(\302\210\037\267q\000\225Xb\250\001\202\363\253B`3\226\345sH\261e\252\250\210\350\340\325\222D\027\357\001\245!\260\301D\246\306\\\002`{\242j4\336\0334VF\333\013)\206\023?\3231\361h\271\222F\215?M\025\233\215\261\252\211\351\374\204\351S\303&\014\221\022E_$\002K\224\037\202A>\205\032kL\351\352\226\224\220P!\340\024`@l\3401\265\265\024\201\347\304\332\214i\007L\2148<\004\363\226#\"+J\2474\023\\\"\"@l\010\206\240\223\231sF\022k\325,l-\302\246\023c6\231\021\021\231\021<\311Q\320(%u\307#\241Z\203\347Y\300\321\350\234\250Q\272\021RAfT\351\233\007\335\000\351\0260P\212`*\272*\362a\020GN\231G;\227\006\372:\272\216H!4\243v\t\356\245\200f\224\032\014\021\331\002X\017\023\340\340\240\325\323\211\375\005_d\235\343\234&#\024\004j\r`\004\262&N\227<H[\301\2611\022]:)7\013\316%l\266\t\363\005J&\201\"\303\353A+\215\030""\014\327)GMN}d\010NU\024c\3127\221\rDA\300\315\242U\202\344\274\311I\340\236rJm \003I\322\240\245\034!b\301*\020\204s\3418~\030G\001PI\200s\010\321  2e\260\336\014K\224K\232\373\241!S\241\020\204\006\225\216\221J\250\302\"\331\004\2725\201TSP\277\t\246H\216P\256\324\017\224 \266b\347\002\350U\224\020\271\362\030\251dH\342P\212J\210Bb\20169cu\005H\353L\034'\231\314\017 \323\010\312\304*H\267\t'\"\025\235)\341p\2776D\nq9\363\010\212\004Lm5*\326H\324\r\004*H\234\r\014y\027\002Uv\010\2201\214\213\371\3618$W\213SD\301Q\320\300\267'\202\361\n\365\\u.JBP\031x \021\000\345\265N\226&\304\360\025TNP\275\017w\200\350\350\302|\000d\322\010e1\242\354\317\234`\315g\323\367\024\271\356\026\234\007\206:\327\364g)?\206\241\246B\027\315\326\374\334-C[h6\022#\260\010pH\330\206\3234Z\231QX\236f\357\n\317\366V\253><\236\261\2576\270'\264BhD\327\224\020\211\312\342\r\016Ea8\037\370\273\222)\302\204\203)\005\242 ";
-    PyObject *data = __Pyx_DecompressString(cstring, 1042, 2);
+    #elif (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (994 bytes) */
+const char* const cstring = "BZh91AY&SY\"\255~O\000\000a\377\373\357\177\377\305n\357\246\365\277\247~@\277\377\377\342@@@@@@@@@@@\000@\000P\003>\366;\336\353\334\326\367wn\363\206\2114\022mLj=54\306\220\311\240h\000\323F\201\220\r\032\032a\014\3226\246h\201\251\252\237\211\221\023zL\322\t\241\352z\215\003@a\r\006\200\000\000h\000\r4\006\246\206\201\023S\311=\0104\320\000\000\000\000\000\000\000\000\000\032\247\350\243F\243\024\364L\207\251\246\215\000\000\000\000\000\000\000\000\001\265\006H\206D\315$b\014M\032\001\240\000\000\000\000\000\001\241\240\007\334\310m\224\362PP\332\000W\261c\363\343\370\237\340\262\210\210\216\013\262\2023\001\201\205\204-\013\263RF\274,\330@\236+\211\214\022\200\332d\3059Z\220\254q<\354d%\265j\301\235>=^EP\260=E=\004\362\264\376\030Q\214\024f\331\3606_^+\010iEn\300\260\375[,\3240\272\361]\224\350\337\324\032\232$\256\372F\252CT\202\235y'r+m\246\356Nr\251\204\337D\271HJa\241\035\322\033\035](\n8\021Yh\211W\255\021\311Me\037,q\224cJA^\n\353\211\376\314\227\361h\243\231\260h\262\001\332\002\335\311\200M?\247\226ua\216\245<,\036C\010S\354\"\243=\213@p\010\247K\01795\241N) \352r\020\033d\224\001\025\370\310P\002\365\2134\021<\2464\341\225\2015\224b\254f\270=L\2163\030\r\001i\032\212\2022\005\023t\020\206\274\305\276\2654-\302\177d\217\265\034C\254;\313O\346\223\330\362\213\026r\345\316\310\310\342$\364\206\241f\005\210,fi\022\335<\351\207\037@\204\0028s>K\252\234\353U\3154\310\267A\000\013H\210I\321$\215mU\221\004\"}V5\0041\312!\017\000\226p\241\251Y\"\005\370\004$\250G\302\2528\026\203\362\206%Z6\025\203\223\214q\244\010I)I\021-\263\251\360@W\343$t\r\001i\373pJ\227\032\330d\365\271\264N\261T\250\224\n\340\250\215\340\234\310\301K3\034H\"\006\271#\233\216\372\362\226\026C\240\201:!,\034\220K\220\030QS\300M\0023 P2\345\344\320v4\255\222\375b*\010i\224\251\005\021\023\302\245\031\324\204\311\356\r\024\216\204i<\026\324\221\360\235m\010\224\204\301\240Jaf\241M\311SBR\312e%T<\330A\024\034\225\365q\327UQ\302CB\"\212lk1\340\0140\003\002CI\024\200\024\241\251\020\274\273\363""\006\240\202\335}l\027\010Q\200\321\274@;\031RHHABy\360L4\rdA\242\215\001h\036\017\272\356\021\203XV\254\241H\th\341\004\\\223\212E\032\\\"\007J+\264\207\220 N\230\347\004\260\2520\211n\215\"\342\251\032\311\200\330L3!A\200I\n\320\\\314zu\242\004l\210\221\010\010T\n\377\331\025dcD\224UL\265,C'\275\034\212\034ik\310\026\262\021\030\332`\323\233)\n\"b\314j\r\014\200\277\021\320z(\310c\031\037\354\"x2\351\244\353\017\211\024\020\231\300\232B\236\013\037C\035:\016\032/\001\021\244~\302\241\275\020d\304\004k\234W*L\271t\273\373lz\001{\t\030\276\nu\200\376\002\257\371A\361\"\2753\303^\324\337\017W\316\007\2137\014\006+\027\253q\266,C\2276`\210\022,\317\0067\240\021\n\213\274<\254\t,\206\262Bg\241j\2641C\334\025\346\230S\222#\350\0374\021\256\202\036t\205\n\353\316\027B\177\213\271\"\234(H\021V\277'\200";
+    PyObject *data = __Pyx_DecompressString(cstring, 994, 2);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (897 bytes) */
-const char* const cstring = "x\332uR=o\033G\020U\020'\240\025\311\022-\313Va\004KD\206e$:\203\000\r\307A\340\340L*\206\200@\220\0229H\267\330\333\233#\327>\356\236\366C\"\213\000*Y^y%K\225,Y\252L\311\362J\375\004\375\204\314R\022\305D\311\001w7;\363v\336\314\233\t\202F\022\276k\222f\007\370\247\037\310o\341!\331j*'-\350m\350\261n\226\002I\360\034\277 B\2229\344\207\275\326Ns\267\265\323\272\343\237\346\370\035\264H\004\334^\343\312\2451\221\312\222\030\270\210\201\330\016\220L\253(\205.\331\322`\235\226\020\223\355\372\213`OI\330S\326C\230%\315\276\355(I\204\301\213\251\210@3\013i\237\030\253\005\307*=H\222\375\235\375\355\306\367\r\302dL4|\004n\r1.\342)3\006\014Q\t\211\234H-\326b\373\031\230\200\354&\244\257\034\221\200\234V\221\014q\363\027\2608I\014\330i\225\317\231\304\272\231\025JR\274.d\3739\211\205F\022q\014\376\366\317,5\020\374\304\342\230\"\020ba\030\266\005\322\177\333\\\230++\226\n[H\230K-\241TC\3548PJb7\315!\225\334\306\226\216\005K1\312\205\024\326\203XL\217Q\312T\265\211\321\374e$d\214\374\346%\2138=\321,\313@\007Y\277\367\243\227\003\375\312i\016o\303\210\357\372\t&\214\303\274\035\314h\371TTJ\377\025\305\216\r6\372?q\356'L\r\263\377\360j')W\335.JO\351~\277\207o\013'C\367\240g\177\305vM_r\241\002\256\264r8\0000\034z4\022\326\314\322\361\024\335T\240\270\032\023F\214\177\342\335\230F}\213\330\253\304\261\323S\371\0019\254\350\242l\340\371)>\320\363BQ\2328\311)m\203\375E\265\333>\324\276\351\205\n!\023%p\327\216\221\305\320Y%\302B\327\244S\270\377\242~\224v\031\326\201OW\305.\005oI\346\371\262&\3642\225\241\201\035^\347=r,\275\212\336\216\363\216\3023\007vM\347\264\3025K\223\251\342\327\014h]o\307\334\034\350\177\314\004\367 \270\331\203`n\017\274\037\373JM`\\\226i0\006\357i;\025\314gpx\326\314tn\242\330F\214B\370\037h\024\014\345Fj\217>f\251\003s\275w4\021)\2340-\221\3574\274\\]\270\3770\177R,\016k\303zYY\317\017\213\365\202]~\271\360`sX\307\337r5_*\302\202\236\205g\007\227\225\233\343\301\345\327\267&z\037O\326\277C\304\341\250z\261\264\226\327\313\245\225\301I\316\213jY\335(""\226'\317^\215\016F\361\270vQY\313\033\271+\302\022\2157\305\273\202]T\276\032\274\316\277\311\017\312\245\207\371\263\374h\262\361f\\\035o\235\327J\237\346n\264u\036\236\377\361\327\224ru\340\362f~\204%V7\362?'\233\215Q8:\034W\313\325\265\374U\361yQ/\327\237\026\341\345\343\205\345\r\004-\372j\277\310?\024\265\242Q\034y\314\333au\2709\354\234\261\362\321\323\342\375\260>\014/f\206\347\306\274\367W\006\235\234M\236\324G\325\321\326\270VV\036\014RLP?\r/*\217\362\367\305\353+\311V&+\265i2qvt\372Yyoq\360m~\3607\016\252\031\311";
-    PyObject *data = __Pyx_DecompressString(cstring, 897, 1);
+    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (861 bytes) */
+const char* const cstring = "x\332uRMo\0337\020u\320\017(\256\035[\261\235\370\020\024\024\352\")Zo @E\332\242H\261\221\335\300@k\330\255\003\364Fp\271#\211\rE\256\370\241H\207\002>\352\270\307=\352\250\243\216\371\031:\356\321?A?\241C\331r\324\272]`\227\2633\217\363f\336L\0245Z\361\253&iv\200\277\375\201\374\036_\020\241\310\212\347\315\351\321q\363\344\350\370\350\216\177\005\313\265\227)Q\332\221\024\270H\201\270\016\220\314\350DB\227<3\340\274Q\220\222\303\372W\321\251Vp\252]\2000G\232C\327\321\212\010\213\027\245H\3000\007rH\2543\202;0\001\244\310\331\361\331a\343\273\006a*%\006\376\004\356,\261>\341\222Y\013\226\350\026I\274\220\016kq\303\014lDNZd\250=Q\200\234N\223\014q\253\027\2608E,\270E\225O\231\302\272\231\023ZQ\274.T\373)I\205A\022\321\207p\373g&-D?\2614\245\010\204TX\206m\201\n\3376\027\366\332J\225\306\026Z\314KG(5\220z\016\224\222\324/r(\255\016\261\245\276`\022\243\\(\341\002\210\245\264\017FH\335&\326\360\347\211P)\362\333\347,\341\364\235aY\006&\312\206\203\037\203\034\350\327\336px\031'\374D\2416-\306a\325\216ni\371BTJ\377\025\305\216-6\372?q\036\306J-s\377\360\032\257(\327\335.JO\351\331p\200\357\021N\206\236\302\300\375\206\355\332\241\342BG\\\033\355q\000`9\014h\"\234\275M\307%\272\251@q\r&L\030\177\313\273)M\206\016\261\327\211So\026\362\003r8\321E\331 \360S|`\020\204\242\264\345\025\247\264\r\356\027\335n\207P{\331\013\025B\265\264\300]\353#\213\245\267\225\010\007]+\027\360\360E\375(\3552\254\003\237\256N\275\204`)\026\370\262&\0142\235\241\201\035\336\344\355y&\257\243\037\306yG\341[\007vMW\264\3025\223\255\205\3427\014h\335l\307\312\034\350\177\314\004\367 Z\356A\264\262\007\301\217}I\033Y\237e\006\254\305{\306-\004\013\031<\376\033f;\313(\266\221\242\020\341\000\203\202\241\334H\035\320}&=\330\233\275\243-!\341\0353\n\371.\343\371\366\332\375\207\371\343b}\\\033\327\313\312^~Q\354\025l\376\351\332\203\203q\035\217\315j\276Q\304\005\235\304\223\363ye\371{>\377\374\203\211\336G\263\275o\020q1\255^U\310\370^Y\371l\364\"\377\"?/7w\363_g\265\372\264:=\230\262\253\312N""\336\310}\021\227h|_\274*\320\263\004n<\314\277\314{\263\375h\302&\203i\257\334\330\311\353w\243\201\344\217\351\202r{\344\363f\336\303\022\253\373\371_\263\203\3064\236^\274\257\226\333;\371\267\305GE\275\334{R\304\363Gk\233\373\010Z\017\325~\222\277)jE\243\350\005\314\313qu|0\356LX\271\373\244x=\256\217\343\253[#pc\336\373[\243N\316f\217C\365\317\336\327\312\312\203\221\304\004\365\313\370\252\262\233\277.^\\K\2665\333\252-\222\211I\357\362^\371\361\372\350\353\374\374o\024\316\rR";
+    PyObject *data = __Pyx_DecompressString(cstring, 861, 1);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #else /* compression: none (1415 bytes) */
-const char* const bytes = "..4fABC Check: SAT (Counter-example found) in ABC Check: UNDECIDED in ABC Check: UNSAT (Verified) in ABC could not decide the problem (returned -1).NoneNote that Cython is deliberately stricter than PEP-484 and rejects subclasses of builtin types. If you need to pass subclasses then set the 'annotation_typing' directive to False.?add_notedisableenablegcisenabledno default __reduce__ due to non-trivial __cinit__read_verilog src/bindings/abc_wrapper.pyx<stringsource>AbcInterfaceAbcInterface.__reduce_cython__AbcInterface.__setstate_cython__AbcInterface.check_satAbcInterface.run_command__Pyx_PyDict_NextRefasyncio.coroutinescex_bitscheck_satcline_in_tracebackcmd_bytescommanddurationend_time__enter____exit____func__getLogger__getstate__iinfoiprove_is_coroutineitemsloggerlogging__main____module____name__pCexpop__pyx_state__qualname____reduce____reduce_cython____reduce_ex__run_commandsself__set_name__setdefault__setstate____setstate_cython__src.bindings.abc_wrappersrc.utils.suppressstart_timestatusstrashsuppress_stdout_stderr__test__timevaluesverilog_filewarning\200A\360\020\000\t\022\220\027\230\n\240!\2401\330\010\025\220T\230\025\230a\360\006\000\016$\2401\360\006\000\r\021\220\014\230A\230_\250A\250Q\360\010\000\r\021\220\014\230A\230Q\360\036\000\r\021\220\014\230A\230Q\360\010\000\r\026\320\025,\250A\250T\260\021\340\014\023\2201\330\014\017\210w\220c\230\021\330\021\030\230\r\320%5\260Q\260d\270!\340\010\023\2204\220u\230A\330\010\023\2209\230B\230a\340\010\013\2107\220#\220Q\330\014\022\220%\220q\320\0309\270\021\270(\300!\330\014\023\2201\340\010\013\2107\220#\220Q\330\014\022\220%\220q\320\030D\300A\300X\310Q\360\010\000\r\020\210u\220C\220q\360\006\000\021\030\220}\320$4\260A\260T\270\021\330\020\023\2205\230\003\2301\330\025\034\230A\360\026\000\r\030\220q\360\n\000\r\021\220\005\220U\230!\2304\230q\330\020\023\220>\240\021\240$\240h\250a\330\024\034\230G\2401\240A\340\024\034\230G\2401\240A\340\014\023\2201\360\006\000\t\017\210h\220a\320\0271\260\021\260(\270!""\330\010\016\210l\230!\2301\200A\340\010\024\220G\2307\240!\2401\330\010\017\320\017!\240\021\240$\240i\250q\200\001\330\004\n\210+\220Q";
+    #else /* compression: none (1380 bytes) */
+const char* const bytes = "..4fABC Check: SAT in ABC Check: UNDECIDED in ABC Check: UNSAT in ABC could not decide the problem (returned -1).NoneNote that Cython is deliberately stricter than PEP-484 and rejects subclasses of builtin types. If you need to pass subclasses then set the 'annotation_typing' directive to False.?add_notedisableenablegcisenabledno default __reduce__ due to non-trivial __cinit__read_verilog src/bindings/abc_wrapper.pyx<stringsource>AbcInterfaceAbcInterface.__reduce_cython__AbcInterface.__setstate_cython__AbcInterface.check_satAbcInterface.run_command__Pyx_PyDict_NextRefasyncio.coroutinescex_bitscheck_satcline_in_tracebackcmd_bytescommanddurationend_time__enter____exit____func__getLogger__getstate__iinfoiprove_is_coroutineitemsloggerlogging__main____module____name__pCexpop__pyx_state__qualname____reduce____reduce_cython____reduce_ex__run_commandsself__set_name__setdefault__setstate____setstate_cython__src.bindings.abc_wrappersrc.utils.suppressstart_timestatusstrashsuppress_stdout_stderr__test__timevaluesverilog_filewarning\200A\360\020\000\t\022\220\027\230\n\240!\2401\330\010\025\220T\230\025\230a\360\006\000\016$\2401\360\006\000\r\021\220\014\230A\230_\250A\250Q\360\010\000\r\021\220\014\230A\230Q\360\036\000\r\021\220\014\230A\230Q\360\010\000\r\026\320\025,\250A\250T\260\021\340\010 \240\001\330\010\013\2107\220#\220Q\330\r\024\220M\320!1\260\021\260$\260a\340\010\023\2204\220u\230A\330\010\023\2209\230B\230a\340\010\013\2107\220#\220Q\330\014\022\220%\220q\320\030.\250a\250x\260q\330\014\023\2201\340\010\013\2107\220#\220Q\330\014\022\220%\220q\320\030,\250A\250X\260Q\360\010\000\r\020\210u\220C\220q\360\006\000\021\030\220}\320$4\260A\260T\270\021\330\020\023\2205\230\003\2301\330\025\034\230A\360\026\000\r\030\220q\360\n\000\r\021\220\005\220U\230!\2304\230q\330\020\023\220>\240\021\240$\240h\250a\330\024\034\230G\2401\240A\340\024\034\230G\2401\240A\340\014\023\2201\360\006\000\t\017\210h\220a\320\0271\260\021\260(\270!\330\010\016\210l\230!\2301\200A\340\010""\024\220G\2307\240!\2401\330\010\017\320\017!\240\021\240$\240i\250q\200\001\330\004\n\210+\220Q";
     PyObject *data = NULL;
     CYTHON_UNUSED_VAR(__Pyx_DecompressString);
     #endif
@@ -4839,7 +4839,7 @@ static int __Pyx_CreateCodeObjects(__pyx_mstatetype *__pyx_mstate) {
   {
     const __Pyx_PyCode_New_function_description descr = {2, 0, 0, 10, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 49};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_self, __pyx_mstate->__pyx_n_u_verilog_file, __pyx_mstate->__pyx_n_u_logger, __pyx_mstate->__pyx_n_u_start_time, __pyx_mstate->__pyx_n_u_status, __pyx_mstate->__pyx_n_u_pCex, __pyx_mstate->__pyx_n_u_end_time, __pyx_mstate->__pyx_n_u_duration, __pyx_mstate->__pyx_n_u_cex_bits, __pyx_mstate->__pyx_n_u_i};
-    __pyx_mstate_global->__pyx_codeobj_tab[1] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_src_bindings_abc_wrapper_pyx, __pyx_mstate->__pyx_n_u_check_sat, __pyx_mstate->__pyx_kp_b_iso88591_A_1_T_a_1_A_AQ_AQ_AQ_AT_1_wc_5Qd, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[1])) goto bad;
+    __pyx_mstate_global->__pyx_codeobj_tab[1] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_src_bindings_abc_wrapper_pyx, __pyx_mstate->__pyx_n_u_check_sat, __pyx_mstate->__pyx_kp_b_iso88591_A_1_T_a_1_A_AQ_AQ_AQ_AT_7_Q_M_1, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[1])) goto bad;
   }
   {
     const __Pyx_PyCode_New_function_description descr = {1, 0, 0, 1, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 1};

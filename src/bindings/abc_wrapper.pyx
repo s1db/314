@@ -86,9 +86,9 @@ cdef class AbcInterface:
             # 1=UNSAT (Property holds), 0=SAT (Property fails), -1=UNDEC
             status = Abc_FrameReadProbStatus(self._frame)
             
-            pCex = NULL
-            if status == 0:
-                 pCex = <Abc_Cex_t *>Abc_FrameReadCex(self._frame)
+        cdef Abc_Cex_t * pCex = NULL
+        if status == 0:
+             pCex = <Abc_Cex_t *>Abc_FrameReadCex(self._frame)
 
         end_time = time.time()
         duration = end_time - start_time

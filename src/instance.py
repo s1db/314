@@ -31,8 +31,7 @@ class Instance:
         # Count unique variables quantified
         quantified_vars = sum(len(q[1]) for q in self.quantifiers)
         if self.num_vars != quantified_vars:
-            # warn instead of raise
-            logger.warning(
+            raise ValueError(
                 f"Number of variables ({self.num_vars}) does not match quantified count ({quantified_vars})"
             )
 

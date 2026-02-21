@@ -32,5 +32,6 @@ checkers/checkSkolem
 *.aig
 *.aag
 *.qdimacs
+!test_instances/*.qdimacs
 *.cnf
 *.dot
