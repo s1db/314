@@ -21,9 +21,9 @@ class TestRepair:
             TrivialInterBlockDependencyScheme,
         )
 
-        instance = Instance(
-            2, 1, quantifiers, clauses, TrivialInterBlockDependencyScheme
-        )
+        instance = Instance(2, 1, quantifiers, clauses)
+        scheme = TrivialInterBlockDependencyScheme(2, clauses, quantifiers)
+        instance.set_dependency_scheme(scheme)
         return instance
 
     def test_repair_basic(self, manager, simple_instance):

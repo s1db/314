@@ -39,9 +39,7 @@ class Solver:
         # 1. Parse Instance
         self.logger.info(f"Parsing instance: {instance_path}")
         # Pass the desired dependency scheme class to the parser
-        self.instance: Instance = QBFParser.from_file(
-            instance_path, dependency_scheme_class=dependency_scheme_cls
-        )
+        self.instance: Instance = QBFParser.from_file(instance_path)
 
         self.logger.info(
             f"Parsed {self.instance.num_vars} variables and {self.instance.num_clauses} clauses."
@@ -54,10 +52,15 @@ class Solver:
 
         # 2. Initialize Components
         # The dependency scheme is now initialized within the Instance
-        self.dep_scheme = self.instance.dependency_scheme
-
         self.sampler = UniformSampler(all_vars, self.instance.clauses)
         self.function_manager = FunctionManager()
+        self.dep_scheme = dependency_scheme_cls(
+            self.instance.num_vars,
+            self.instance.clauses,
+            self.instance.quantifiers,
+        )
+        self.instance.set_dependency_scheme(self.dep_scheme)
+
         self.learner = guesser_cls()
 
         self.error_formula = error_formula_cls()
@@ -85,10 +88,6 @@ class Solver:
             self.instance, samples, self.function_manager, self.dep_scheme
         )
 
-        # IMPORTANT: Register the learned dependencies!
-        # The dependency scheme implementation determines if updates are allowed.
-        self.dep_scheme.register_candidates(self.candidates, self.logger)
-
         # Phase 3: Verification Loop
         self.logger.info("Entering verification loop...")
 
@@ -98,7 +97,7 @@ class Solver:
             self.logger.info(f"--- Iteration {iteration} ---")
 
             # 1. Check
-            is_sat, assignment, oracle_assignment = self.error_formula.check(
+            is_sat, assignment = self.error_formula.check(
                 self.instance.clauses, self.candidates, self.x_vars, self.y_vars
             )
 
@@ -107,7 +106,7 @@ class Solver:
                 self.print_solution()
                 return
 
-            assert assignment is not None
+            assert assignment is not None, "Assignment should not be None if SAT"
             self.logger.info("SAT! Counter-example found.")
 
             # 2. Fault Localization

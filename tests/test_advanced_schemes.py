@@ -17,11 +17,12 @@ class MockQBFInstance(Instance):
     ):
         num_vars = sum(len(vars) for _, vars in quantifiers)
         num_clauses = len(clauses)
-        # Pass a dummy dependency scheme class if none provided, or verify logic requires it
-        # We perform dependency computation manually in tests usually, or pass the class to test
-        super().__init__(
-            num_vars, num_clauses, quantifiers, clauses, dependency_scheme_class
-        )
+        super().__init__(num_vars, num_clauses, quantifiers, clauses)
+
+        # Manually set dependency scheme if provided (for back-compat in tests)
+        if dependency_scheme_class:
+            scheme = dependency_scheme_class(num_vars, clauses, quantifiers)
+            self.set_dependency_scheme(scheme)
 
     def verify_dependencies(self):
         pass
@@ -92,15 +93,21 @@ def test_spec_example():
     }
 
     # These assertions will be enabled once classes exist
-    instance = MockQBFInstance(quantifiers, clauses, lambda x: None)
+    instance = MockQBFInstance(quantifiers, clauses)
 
-    scheme_trv = TrivialDependencyScheme(instance)
+    scheme_trv = TrivialDependencyScheme(
+        instance.num_vars, instance.clauses, instance.quantifiers
+    )
     verify_deps(scheme_trv, expected_trivial)
 
-    scheme_std = StandardDependencyScheme(instance)
+    scheme_std = StandardDependencyScheme(
+        instance.num_vars, instance.clauses, instance.quantifiers
+    )
     verify_deps(scheme_std, expected_standard)
 
-    scheme_tri = TriangleDependencyScheme(instance)
+    scheme_tri = TriangleDependencyScheme(
+        instance.num_vars, instance.clauses, instance.quantifiers
+    )
     verify_deps(scheme_tri, expected_triangle)
 
 
@@ -139,14 +146,20 @@ def test_disconnected_components():
     expected_triangle = {1: set(), 2: set(), 3: set(), 4: set()}
 
     # Assertions placeholder
-    instance = MockQBFInstance(quantifiers, clauses, lambda x: None)
-    scheme_trv = TrivialDependencyScheme(instance)
+    instance = MockQBFInstance(quantifiers, clauses)
+    scheme_trv = TrivialDependencyScheme(
+        instance.num_vars, instance.clauses, instance.quantifiers
+    )
     verify_deps(scheme_trv, expected_trivial)
 
-    scheme_std = StandardDependencyScheme(instance)
+    scheme_std = StandardDependencyScheme(
+        instance.num_vars, instance.clauses, instance.quantifiers
+    )
     verify_deps(scheme_std, expected_standard)
 
-    scheme_tri = TriangleDependencyScheme(instance)
+    scheme_tri = TriangleDependencyScheme(
+        instance.num_vars, instance.clauses, instance.quantifiers
+    )
     verify_deps(scheme_tri, expected_triangle)
 
 

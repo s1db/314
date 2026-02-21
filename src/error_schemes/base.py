@@ -1,8 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict, Optional
+from typing import List, Dict
 import os
+import logging
 from src.candidate_function import CandidateFunction, NodeType
 from src.error_schemes.verilog_utils import VerilogGenerator
+import tempfile
+from src.bindings.abc_wrapper import AbcInterface  # ty:ignore[unresolved-import]
+
+logger = logging.getLogger(__name__)
 
 
 class ErrorFormula(ABC):
@@ -77,17 +82,14 @@ class ErrorFormula(ABC):
         candidates: Dict[int, CandidateFunction],
         x_vars: List[int],
         y_vars: List[int],
-    ) -> tuple[bool, Optional[Dict[int, bool]], Optional[Dict[int, bool]]]:
+    ) -> tuple[bool, Dict[int, bool] | None]:
         """
         Checks if the candidates satisfy the specification.
         Returns:
-            (True, assignment, oracle_assignment) if SAT (Error found).
-            (False, None, None) if UNSAT (Verified).
+            (True, assignment) if SAT (Error found).
+            (False, None) if UNSAT (Verified).
         """
-        import tempfile
-        from src.bindings.abc_wrapper import AbcInterface  # type: ignore
 
-        # Create temporary file for Verilog
         # Create temporary file for Verilog
         with tempfile.NamedTemporaryFile(suffix=".v", delete=False, mode="w") as tmp:
             tmp_path = tmp.name
@@ -99,45 +101,41 @@ class ErrorFormula(ABC):
 
             abc = AbcInterface()
             # check_sat returns None if UNSAT, bits list if SAT
-            result_bits = abc.check_sat(tmp_path)
+            # NOW returns Dict[str, bool] if SAT
+            result_map = abc.check_sat(tmp_path)
 
-            if result_bits is None:
-                return (False, None, None)
+            if result_map is None:
+                return (False, None)
 
-            # Map bits to variables
-            # Order in verilog_utils.py: X variables then Y variables (then Y' but CEX usually covers PIs)
-            # The PIs of MAIN module are: vX..., vY..., ipY...
-            # vX are inputs (size len(x_vars))
-            # vY are inputs (size len(y_vars))
-            # ipY are inputs (size len(y_vars))
-
-            # Current ABC wrapper returns raw bits from CEX.
-            # We need to map them.
-            # Assuming the order matches the port definition sequence.
+            # Map assignments based on names
+            # Names in Verilog:
+            # X vars: v{x}
+            # Y vars (oracle): v{y}
+            # Y' vars (candidate): ip{y}
 
             assignment = {}
-            bit_idx = 0
 
             # 1. X vars
             for x in x_vars:
-                if bit_idx < len(result_bits):
-                    assignment[x] = bool(result_bits[bit_idx])
-                    bit_idx += 1
+                name = f"v{x}"
+                assert name in result_map, f"Missing assignment for X variable {name}"
+                assignment[x] = bool(result_map[name])
 
-            # 2. Y vars (Oracles) - Capture these for repair context
-            oracle_assignment = {}
+            # 2. Y vars (Oracles) - Not needed for repair currently
             for y in y_vars:
-                if bit_idx < len(result_bits):
-                    oracle_assignment[y] = bool(result_bits[bit_idx])
-                    bit_idx += 1
+                name = f"v{y}"
+                assert name in result_map, f"Missing assignment for Y variable {name}"
 
-            # 3. Y' vars (Candidate outputs) - These are the actual values produced by candidates
+            # 3. Y' vars (Candidate outputs) - These override Y in the main assignment for repair
             for y in y_vars:
-                if bit_idx < len(result_bits):
-                    assignment[y] = bool(result_bits[bit_idx])
-                    bit_idx += 1
+                name = f"ip{y}"
+                assert name in result_map, f"Missing assignment for Y' variable {name}"
+                assignment[y] = bool(result_map[name])
 
-            return (True, assignment, oracle_assignment)
+            return (True, assignment)
+        except RuntimeError as e:
+            logger.error(f"Could not verify formula. Error: {e}")
+            raise e
 
         finally:
             if os.path.exists(tmp_path):

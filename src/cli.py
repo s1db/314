@@ -3,8 +3,13 @@ import sys
 import logging
 from pathlib import Path
 from src.solver import Solver
-from src.fault_localization_schemes import MaxSATScheme, LexMaxSATScheme
+from src.fault_localization_schemes import (
+    MaxSATScheme,
+    LexMaxSATScheme,
+    QuantifierLevelMaxSATScheme,
+)
 from src.repair_schemes.unsat_core import UnsatCoreRepairScheme
+from src.repair_schemes.dqbf_unsat_core import DQBFUnsatCoreRepairScheme
 from src.error_schemes.bfns import BFnSErrorFormula
 from src.error_schemes.qbf_skolem import QBFSkolemErrorFormula
 from src.guessing_schemes.manthan import ManthanGuesser
@@ -26,7 +31,7 @@ def parse_args():
     parser.add_argument(
         "-f",
         "--fl-scheme",
-        choices=["maxsat", "lexmaxsat"],
+        choices=["maxsat", "lexmaxsat", "quantifier-level-maxsat"],
         default="lexmaxsat",
         help="Fault Localization Scheme to use",
     )
@@ -34,7 +39,7 @@ def parse_args():
     parser.add_argument(
         "-r",
         "--repair-scheme",
-        choices=["unsat-core"],
+        choices=["unsat-core", "dqbf-unsat-core"],
         default="unsat-core",
         help="Repair Scheme to use",
     )
@@ -121,8 +126,15 @@ def main():
         sys.exit(1)
 
     # Map choices to classes
-    fl_schemes = {"maxsat": MaxSATScheme, "lexmaxsat": LexMaxSATScheme}
-    repair_schemes = {"unsat-core": UnsatCoreRepairScheme}
+    fl_schemes = {
+        "maxsat": MaxSATScheme,
+        "lexmaxsat": LexMaxSATScheme,
+        "quantifier-level-maxsat": QuantifierLevelMaxSATScheme,
+    }
+    repair_schemes = {
+        "unsat-core": UnsatCoreRepairScheme,
+        "dqbf-unsat-core": DQBFUnsatCoreRepairScheme,
+    }
     error_schemes = {
         "bfns": BFnSErrorFormula,
         "qbf-skolem": QBFSkolemErrorFormula,

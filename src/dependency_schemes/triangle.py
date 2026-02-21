@@ -1,6 +1,5 @@
-from typing import List, Set, Dict, Tuple
+from typing import List, Tuple, Set
 from src.dependency_schemes.base import DependencyScheme
-from src.instance import Instance
 
 
 class TriangleDependencyScheme(DependencyScheme):
@@ -8,21 +7,26 @@ class TriangleDependencyScheme(DependencyScheme):
     Implements the Triangle Dependency Scheme.
     """
 
-    def __init__(self, instance: Instance):
-        super().__init__(instance)
+    def __init__(
+        self,
+        num_vars: int,
+        clauses: List[List[int]],
+        quantifiers: List[Tuple[str, List[int]]],
+    ):
+        super().__init__(num_vars, clauses, quantifiers)
 
     def compute(self):
         # Optimized Triangle Scheme using block structure and alternating quantifiers.
 
         # 1. Map literals to clauses
         lit_to_clauses = {}
-        for i, clause in enumerate(self.instance.clauses):
+        for i, clause in enumerate(self.clauses):
             for lit in clause:
                 if lit not in lit_to_clauses:
                     lit_to_clauses[lit] = []
                 lit_to_clauses[lit].append(i)
 
-        quantifiers = self.instance.quantifiers
+        quantifiers = self.quantifiers
         n_blocks = len(quantifiers)
 
         # Helper: Get all variables from a list of blocks
@@ -62,7 +66,7 @@ class TriangleDependencyScheme(DependencyScheme):
                     clauses.extend(lit_to_clauses[-v])
                 x_var_to_clauses[v] = list(set(clauses))
 
-            adj_core = {idx: {} for idx in range(len(self.instance.clauses))}
+            adj_core = {idx: {} for idx in range(len(self.clauses))}
             for v, c_idxs in x_var_to_clauses.items():
                 for k in range(len(c_idxs)):
                     c1 = c_idxs[k]
@@ -265,6 +269,26 @@ class TriangleDependencyScheme(DependencyScheme):
             self.dependencies[y] = set()
         self.dependencies[y].add(x)
 
+    def get_allowed_variables(self, target_variable: int) -> Set[int]:
+        """
+        Triangle is a static scheme.
+        Allowed variables are strictly those computed during initialization/compute().
+        """
+        return self.dependencies.get(target_variable, set()).copy()
+
+    def update_dependencies(self, target_variable: int, used_variables: Set[int]):
+        """
+        Validates that used_variables are within the statically computed allowed set.
+        """
+        allowed = self.get_allowed_variables(target_variable)
+        if not used_variables.issubset(allowed):
+            # Identify which variables are violations
+            violations = used_variables - allowed
+            raise ValueError(
+                f"Dependency violation: Variable {target_variable} tried to depend on {violations}, "
+                f"which is not allowed by the static Triangle scheme."
+            )
+
     def verify_dependencies(self) -> None:
         """
         Custom verification for Triangle Scheme.
@@ -276,7 +300,7 @@ class TriangleDependencyScheme(DependencyScheme):
                     raise ValueError(
                         f"Self-dependency detected: variable {u} depends on itself."
                     )
-                if not (1 <= v <= self.instance.num_vars):
+                if not (1 <= v <= self.num_vars):
                     raise ValueError(f"Variable {v} is out of valid range.")
-            if not (1 <= u <= self.instance.num_vars):
+            if not (1 <= u <= self.num_vars):
                 raise ValueError(f"Variable {u} is out of valid range.")

@@ -21,9 +21,9 @@ class TestFaultLocalization:
         quantifiers = [("a", [1]), ("e", [2])]
         clauses = [[1, 2]]  # x1=1, y1=2
 
-        instance = Instance(
-            2, 1, quantifiers, clauses, TrivialInterBlockDependencyScheme
-        )
+        instance = Instance(2, 1, quantifiers, clauses)
+        scheme = TrivialInterBlockDependencyScheme(2, clauses, quantifiers)
+        instance.set_dependency_scheme(scheme)
         return instance
 
     def test_maxsat_simple_unsat(self, manager, simple_instance):
@@ -95,9 +95,9 @@ class TestFaultLocalization:
         # So quantified_vars = 2.
         # Instance(2, 2, ...) -> num_vars=2. Matches.
 
-        instance = Instance(
-            2, 2, quantifiers, clauses, TrivialInterBlockDependencyScheme
-        )
+        instance = Instance(2, 2, quantifiers, clauses)
+        scheme = TrivialInterBlockDependencyScheme(2, clauses, quantifiers)
+        instance.set_dependency_scheme(scheme)
 
         scheme = LexMaxSATScheme(instance)
 

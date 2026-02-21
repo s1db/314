@@ -19,7 +19,9 @@ class TestVerilogSkolem:
 
         quantifiers = [("a", [1, 2]), ("e", [3])]
         # No clauses needed for skolem generation test
-        inst = Instance(3, 0, quantifiers, [], TrivialInterBlockDependencyScheme)
+        inst = Instance(3, 0, quantifiers, [])
+        scheme = TrivialInterBlockDependencyScheme(3, [], quantifiers)
+        inst.set_dependency_scheme(scheme)
         return inst
 
     def test_simple_output(self, manager, simple_instance, tmp_path):
@@ -50,8 +52,9 @@ class TestVerilogSkolem:
         )
 
         quantifiers = [("a", [1, 2, 3, 4]), ("e", [5, 6])]
-        inst = Instance(6, 0, quantifiers, [], TrivialInterBlockDependencyScheme)
-
+        inst = Instance(6, 0, quantifiers, [])
+        scheme = TrivialInterBlockDependencyScheme(6, [], quantifiers)
+        inst.set_dependency_scheme(scheme)
         # Shared node: M = x1 | x2 (OR node)
         # o5 = M & x3 (AND node)
         # o6 = M & x4 (AND node)
@@ -98,7 +101,9 @@ class TestVerilogSkolem:
         )
 
         quantifiers = [("a", [1, 2]), ("e", [3, 4])]
-        inst = Instance(4, 0, quantifiers, [], TrivialInterBlockDependencyScheme)
+        inst = Instance(4, 0, quantifiers, [])
+        scheme = TrivialInterBlockDependencyScheme(4, [], quantifiers)
+        inst.set_dependency_scheme(scheme)
 
         candidates = {3: manager.get_lit(1), 4: manager.get_lit(2)}
 
@@ -126,7 +131,9 @@ class TestVerilogSkolem:
         )
 
         quantifiers = [("a", [1, 2]), ("e", [3, 4])]
-        inst = Instance(4, 0, quantifiers, [], TrivialInterBlockDependencyScheme)
+        inst = Instance(4, 0, quantifiers, [])
+        scheme = TrivialInterBlockDependencyScheme(4, [], quantifiers)
+        inst.set_dependency_scheme(scheme)
 
         c3 = manager.get_lit(1)
         c4 = manager.get_lit(2)
@@ -142,6 +149,10 @@ class TestVerilogSkolem:
     def test_large_function(self, manager, tmp_path):
         # Build a deep alternating tree to avoid flattening
         # (x1 & x2) | (x3 & x4) ...
+        from src.dependency_schemes.trivial_inter_block import (
+            TrivialInterBlockDependencyScheme,
+        )
+
         # Need enough variables
         num_inputs = 100
         num_inputs = 100
@@ -149,13 +160,9 @@ class TestVerilogSkolem:
             ("a", list(range(1, num_inputs + 1))),
             ("e", [num_inputs + 1]),
         ]
-        from src.dependency_schemes.trivial_inter_block import (
-            TrivialInterBlockDependencyScheme,
-        )
-
-        inst = Instance(
-            num_inputs + 1, 0, quantifiers, [], TrivialInterBlockDependencyScheme
-        )
+        inst = Instance(num_inputs + 1, 0, quantifiers, [])
+        scheme = TrivialInterBlockDependencyScheme(num_inputs + 1, [], quantifiers)
+        inst.set_dependency_scheme(scheme)
 
         current_layer = [manager.get_lit(i) for i in range(1, num_inputs + 1)]
 

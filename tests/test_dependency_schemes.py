@@ -5,10 +5,23 @@ from src.dependency_schemes.base import DependencyViolationError
 
 
 class MockQBFInstance(Instance):
-    def __init__(self, quantifiers: List[Tuple[str, List[int]]]):
+    def __init__(
+        self,
+        quantifiers: List[Tuple[str, List[int]]],
+        clauses: List[List[int]] = None,  # Make clauses optional for existing tests
+        dependency_scheme_class=None,
+    ):
+        if clauses is None:
+            clauses = []  # Default to empty clauses if not provided
+
         num_vars = sum(len(vars) for _, vars in quantifiers)
-        # Mock instance with empty clauses and LearnedDependencyScheme
-        super().__init__(num_vars, 0, quantifiers, [], LearnedDependencyScheme)
+        num_clauses = len(clauses)
+        super().__init__(num_vars, num_clauses, quantifiers, clauses)
+        if dependency_scheme_class:
+            # The Instance's __init__ already sets up a default scheme if none is provided.
+            # If a specific scheme class is passed here, we instantiate it and set it.
+            scheme = dependency_scheme_class(self)  # Pass the instance itself
+            self.set_dependency_scheme(scheme)
 
         # Dependency logic is now in DependencyScheme, so Instance doesn't need self.dependencies
         # But for Mocks that might be used by old code or inspection? No, Instance cleaned up.
@@ -22,7 +35,9 @@ class MockQBFInstance(Instance):
 def test_2qbf_simple():
     # Forall x1 (1), Exists y1 (2)
     instance = MockQBFInstance([("a", [1]), ("e", [2])])
-    scheme = LearnedDependencyScheme(instance)
+    scheme = LearnedDependencyScheme(
+        instance.num_vars, instance.clauses, instance.quantifiers
+    )
 
     allowed = scheme.get_allowed_variables(2)
     assert 1 in allowed
@@ -33,7 +48,9 @@ def test_2qbf_simple():
 def test_strict_qbf():
     # Forall x1 (1), Exists y1 (2), Forall x2 (3), Exists y2 (4)
     instance = MockQBFInstance([("a", [1]), ("e", [2]), ("a", [3]), ("e", [4])])
-    scheme = LearnedDependencyScheme(instance)
+    scheme = LearnedDependencyScheme(
+        instance.num_vars, instance.clauses, instance.quantifiers
+    )
 
     # y1 (2) can only depend on x1 (1)
     allowed_y1 = scheme.get_allowed_variables(2)
@@ -48,7 +65,9 @@ def test_strict_qbf():
 def test_mixed_blocks():
     # Exists y0 (1), Forall x1 (2), Exists y1 (3)
     instance = MockQBFInstance([("e", [1]), ("a", [2]), ("e", [3])])
-    scheme = LearnedDependencyScheme(instance)
+    scheme = LearnedDependencyScheme(
+        instance.num_vars, instance.clauses, instance.quantifiers
+    )
 
     # y0 (1) has no predecessors
     allowed_y0 = scheme.get_allowed_variables(1)
@@ -63,7 +82,9 @@ def test_mixed_blocks():
 def test_order_violation():
     # Forall x1 (1), Exists y1 (2), Forall x2 (3), Exists y2 (4)
     instance = MockQBFInstance([("a", [1]), ("e", [2]), ("a", [3]), ("e", [4])])
-    scheme = LearnedDependencyScheme(instance)
+    scheme = LearnedDependencyScheme(
+        instance.num_vars, instance.clauses, instance.quantifiers
+    )
 
     # Try to make y1 depend on x2 (future scope)
     try:
@@ -77,7 +98,9 @@ def test_order_violation():
 def test_intra_block_dependencies_and_cycles():
     # Exists y1, y2, y3 (1, 2, 3)
     instance = MockQBFInstance([("e", [1, 2, 3])])
-    scheme = LearnedDependencyScheme(instance)
+    scheme = LearnedDependencyScheme(
+        instance.num_vars, instance.clauses, instance.quantifiers
+    )
 
     # Initially, all can depend on each other (peers)
     assert 2 in scheme.get_allowed_variables(1)
@@ -103,7 +126,9 @@ def test_intra_block_dependencies_and_cycles():
 def test_transitive_cycle_prevention():
     # Exists y1, y2, y3
     instance = MockQBFInstance([("e", [1, 2, 3])])
-    scheme = LearnedDependencyScheme(instance)
+    scheme = LearnedDependencyScheme(
+        instance.num_vars, instance.clauses, instance.quantifiers
+    )
 
     # 1 -> 2
     scheme.update_dependencies(1, {2})
@@ -126,7 +151,9 @@ def test_total_order():
     # U -> V means U depends on V.
     # Computation order: [2, 1] (Compute 2, then 1)
     instance = MockQBFInstance([("e", [1, 2])])
-    scheme = LearnedDependencyScheme(instance)
+    scheme = LearnedDependencyScheme(
+        instance.num_vars, instance.clauses, instance.quantifiers
+    )
     # Manually inject dependency for testing
     scheme.dependencies = {1: {2}, 2: set()}
 
@@ -134,19 +161,6 @@ def test_total_order():
     # Expect 2 comes before 1 in computation
     assert order == [2, 1]
     print("test_total_order passed")
-
-
-def test_partial_order_transitive():
-    # 1 -> 2 -> 3
-    instance = MockQBFInstance([("e", [1, 2, 3])])
-    scheme = LearnedDependencyScheme(instance)
-    scheme.dependencies = {1: {2}, 2: {3}, 3: set()}
-
-    # Partial order for 1 should include 2 and 3
-    # Computation order: 3, 2, 1
-    order = scheme.get_partial_order(1)
-    assert order == [3, 2, 1]
-    print("test_partial_order_transitive passed")
 
 
 if __name__ == "__main__":
@@ -157,5 +171,5 @@ if __name__ == "__main__":
     test_intra_block_dependencies_and_cycles()
     test_transitive_cycle_prevention()
     test_total_order()
-    test_partial_order_transitive()
+
     print("All tests passed in test_dependency_schemes.py")

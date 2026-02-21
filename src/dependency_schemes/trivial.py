@@ -1,5 +1,5 @@
 from src.dependency_schemes.base import DependencyScheme
-from src.instance import Instance
+from typing import List, Tuple
 
 
 class TrivialDependencyScheme(DependencyScheme):
@@ -10,8 +10,13 @@ class TrivialDependencyScheme(DependencyScheme):
     but only starting from the first variable (from left to right) that has a different quantification type.
     """
 
-    def __init__(self, instance: Instance):
-        super().__init__(instance)
+    def __init__(
+        self,
+        num_vars: int,
+        clauses: List[List[int]],
+        quantifiers: List[Tuple[str, List[int]]],
+    ):
+        super().__init__(num_vars, clauses, quantifiers)
 
     def compute(self):
         # Inverted Trivial Scheme: Store variables that 'var' depends on.
@@ -20,7 +25,7 @@ class TrivialDependencyScheme(DependencyScheme):
         # So x in block i is a dependency for all y in blocks > i.
         # Therefore, y in block j depends on all x in blocks < j.
 
-        quantifiers = self.instance.quantifiers
+        quantifiers = self.quantifiers
 
         cumulative_upstream = set()
 
@@ -51,7 +56,7 @@ class TrivialDependencyScheme(DependencyScheme):
                     raise ValueError(
                         f"Self-dependency detected: variable {u} depends on itself."
                     )
-                if not (1 <= v <= self.instance.num_vars):
+                if not (1 <= v <= self.num_vars):
                     raise ValueError(f"Variable {v} is out of valid range.")
-            if not (1 <= u <= self.instance.num_vars):
+            if not (1 <= u <= self.num_vars):
                 raise ValueError(f"Variable {u} is out of valid range.")

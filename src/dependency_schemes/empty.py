@@ -1,5 +1,5 @@
+from typing import List, Tuple
 from src.dependency_schemes.base import DependencyScheme
-from src.instance import Instance
 
 
 class EmptyDependencyScheme(DependencyScheme):
@@ -9,8 +9,13 @@ class EmptyDependencyScheme(DependencyScheme):
     The compute method creates no additional edges.
     """
 
-    def __init__(self, instance: Instance):
-        super().__init__(instance)
+    def __init__(
+        self,
+        num_vars: int,
+        clauses: List[List[int]],
+        quantifiers: List[Tuple[str, List[int]]],
+    ):
+        super().__init__(num_vars, clauses, quantifiers)
 
     def compute(self):
         # No extra dependencies to add

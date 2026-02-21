@@ -1,9 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Set, Dict, Optional, List, TYPE_CHECKING
-from src.instance import Instance
-
-if TYPE_CHECKING:
-    from src.candidate_function import CandidateFunction
+from typing import Set, Dict, Optional, List, Tuple
 
 
 class DependencyViolationError(Exception):
@@ -18,19 +14,28 @@ class DependencyScheme(ABC):
     Manages the dependency graph and provides common algorithms (cycle detection, sorting).
     """
 
-    def __init__(self, instance: Instance):
-        self.instance = instance
+    def __init__(
+        self,
+        num_vars: int,
+        clauses: List[List[int]],
+        quantifiers: List[Tuple[str, List[int]]],
+    ):
+        self.num_vars = num_vars
+        self.clauses = clauses
+        self.quantifiers = quantifiers
         self.dependencies: Dict[int, Set[int]] = {}
         self.potential_dependencies: Dict[int, Set[int]] = {}
         self.allowed_dependencies: Dict[int, Set[int]] = {}
         self.var_to_block_idx: Dict[int, int] = {}
 
         dependencies = set()
-        for idx, (q_type, vars_list) in enumerate(self.instance.quantifiers):
+        for idx, (q_type, vars_list) in enumerate(self.quantifiers):
             dependencies.update(vars_list)
             for var in vars_list:
                 self.allowed_dependencies[var] = dependencies.copy()
                 self.var_to_block_idx[var] = idx
+
+        self._topological_order: Optional[List[int]] = None
 
         self.compute_potential_dependencies()
         self.compute()
@@ -47,7 +52,7 @@ class DependencyScheme(ABC):
         that appear in previous quantifier blocks.
         """
         previous_quantifier_vars = set()
-        for quantifier in self.instance.quantifiers:
+        for quantifier in self.quantifiers:
             for var in quantifier[1]:
                 self.potential_dependencies[var] = previous_quantifier_vars.copy()
             previous_quantifier_vars.update(quantifier[1])
@@ -55,28 +60,28 @@ class DependencyScheme(ABC):
     def get_dependencies(self, var: int) -> Set[int]:
         return self.dependencies.get(var, set())
 
-    def get_transitive_dependencies(self, var: int) -> Set[int]:
-        """Returns all variables that `var` depends on transitively (descendants in dependency graph)."""
-        visited = set()
-        stack = [var]
-        while stack:
-            curr = stack.pop()
-            for dep in self.get_dependencies(curr):
-                if dep not in visited:
-                    visited.add(dep)
-                    stack.append(dep)
-        return visited
-
     def get_total_order(self) -> List[int]:
         """Returns a topological sort of all variables in the dependency graph."""
         return self.topological_sort()
 
     def topological_sort(self, nodes: Optional[Set[int]] = None) -> List[int]:
-        if nodes is None:
-            nodes = set(self.dependencies.keys())
-            for deps in self.dependencies.values():
-                nodes.update(deps)
+        # If specific nodes requested, compute sort only for them (no caching)
+        if nodes is not None:
+            return self._compute_topological_sort(nodes)
 
+        # Use cached global sort if available
+        if self._topological_order is not None:
+            return self._topological_order
+
+        # Compute global sort and cache it
+        nodes = set(self.dependencies.keys())
+        for deps in self.dependencies.values():
+            nodes.update(deps)
+
+        self._topological_order = self._compute_topological_sort(nodes)
+        return self._topological_order
+
+    def _compute_topological_sort(self, nodes: Set[int]) -> List[int]:
         in_degree = {n: 0 for n in nodes}
         for u in nodes:
             for v in self.get_dependencies(u):
@@ -98,12 +103,23 @@ class DependencyScheme(ABC):
             # This implies a cycle
             raise DependencyViolationError("Cycle detected during topological sort")
 
-        # In our dependency graph [Dependent -> Dependency], result is [Independent, ..., Dependent]
-        # Wait, if U -> V, U depends on V. In-degree 0 means nothing depends on it.
-        # Result [NothingDependsOnIt, ..., DependencyChain]
-        # So it's [Dependent, ..., Dependency].
-        # Computation order should be reversed.
         return list(reversed(result))
+
+    def get_allowed_variables(self, target_variable: int) -> Set[int]:
+        """
+        Returns the set of variables that `target_variable` is allowed to depend on.
+        Default implementation returns static allowed dependencies.
+        Override in dynamic schemes for smarter logic.
+        """
+        return self.allowed_dependencies.get(target_variable, set())
+
+    def update_dependencies(self, target_variable: int, used_variables: Set[int]):
+        """
+        Updates the dependency scheme.
+        Default implementation is a no-op for static schemes.
+        Override in dynamic schemes (e.g. LearnedDependencyScheme) to perform updates.
+        """
+        pass
 
     def sort_by_dependency_order(self, variables: List[int]) -> List[int]:
         """
@@ -134,7 +150,7 @@ class DependencyScheme(ABC):
         """
         # Build map of variable to its quantifier block index and type
         var_to_info = {}
-        for idx, (q_type, vars) in enumerate(self.instance.quantifiers):
+        for idx, (q_type, vars) in enumerate(self.quantifiers):
             for v in vars:
                 var_to_info[v] = (idx, q_type)
 
@@ -165,82 +181,10 @@ class DependencyScheme(ABC):
 
         # Range check
         for v in var_to_info:
-            if not (1 <= v <= self.instance.num_vars):
+            if not (1 <= v <= self.num_vars):
                 raise ValueError(
-                    f"Variable {v} is out of valid range [1, {self.instance.num_vars}]."
+                    f"Variable {v} is out of valid range [1, {self.num_vars}]."
                 )
 
         # Cycle detection
         self.topological_sort()
-
-    def get_partial_order(self, variable: int) -> List[int]:
-        """
-        Returns transitive closure of dependencies for `variable`.
-        Computation order: [Dependency, ..., Variable]
-        """
-        descendants = self.get_transitive_dependencies(variable)
-        nodes = descendants | {variable}
-        return self.topological_sort(nodes)
-
-    def _is_reachable(self, start: int, target: int) -> bool:
-        """Returns True if target is reachable from start (DFS)."""
-        if start == target:
-            return True
-
-        stack = [start]
-        visited = {start}
-        while stack:
-            node = stack.pop()
-            if node == target:
-                return True
-            for neighbor in self.get_dependencies(node):
-                if neighbor not in visited:
-                    visited.add(neighbor)
-                    stack.append(neighbor)
-        return False
-
-    def get_allowed_variables(self, target_variable: int) -> Set[int]:
-        """
-        Returns the set of variables that `target_variable` is allowed to depend on.
-        Filters out variables that already depend on `target_variable` to prevent cycles.
-        """
-        initial_allowed = self.allowed_dependencies.get(target_variable, set())
-        safe_allowed = set()
-
-        target_block_idx = self.var_to_block_idx.get(target_variable, -1)
-
-        for candidate in initial_allowed:
-            candidate_block_idx = self.var_to_block_idx.get(candidate, -1)
-
-            # If candidate is in a future block (shouldn't happen with allowed_dependencies logic, but strictly safe)
-            if candidate_block_idx > target_block_idx:
-                continue
-
-            # If candidate is in a previous block, effective graph is DAG respecting blocks, so no cycle possible
-            # UNLESS the graph is already broken. Standard/Triangle schemes respect block order.
-            if candidate_block_idx < target_block_idx:
-                safe_allowed.add(candidate)
-                continue
-
-            # Same block peers: Check reachability to avoid cycles (u -> v and v -> u)
-            if not self._is_reachable(candidate, target_variable):
-                safe_allowed.add(candidate)
-
-        return safe_allowed
-
-    def update_dependencies(self, target_variable: int, used_variables: Set[int]):
-        """
-        Updates the dependency scheme.
-        Default implementation is a no-op for static schemes.
-        Override in dynamic schemes (e.g. LearnedDependencyScheme) to perform updates.
-        """
-        pass
-
-    def register_candidates(
-        self, candidates: Dict[int, "CandidateFunction"], logger=None
-    ):
-        """
-        Registers candidates and updates dependencies if necessary.
-        Default implementation is a no-op.
-        """
-        pass

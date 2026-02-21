@@ -1,10 +1,15 @@
 from src.dependency_schemes.base import DependencyScheme
-from src.instance import Instance
+from typing import List, Tuple
 
 
 class TrivialInterBlockDependencyScheme(DependencyScheme):
-    def __init__(self, instance: Instance):
-        super().__init__(instance)
+    def __init__(
+        self,
+        num_vars: int,
+        clauses: List[List[int]],
+        quantifiers: List[Tuple[str, List[int]]],
+    ):
+        super().__init__(num_vars, clauses, quantifiers)
 
     def compute(self):
         # computes the dependency scheme for the instance by the following rules:
@@ -14,7 +19,7 @@ class TrivialInterBlockDependencyScheme(DependencyScheme):
         # 4. Variables are not allowed to depend on variables that are in a different quantifier scope.
 
         seen_vars = set()
-        for q_type, variables in self.instance.quantifiers:
+        for q_type, variables in self.quantifiers:
             for var in variables:
                 if q_type == "e":
                     if var not in self.dependencies:

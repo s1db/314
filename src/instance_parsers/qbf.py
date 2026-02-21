@@ -1,23 +1,19 @@
 from typing import Union, List, Tuple
 from pathlib import Path
+from src.instance_parsers.base import InstanceParser
 from src.instance import Instance
-from src.dependency_schemes.trivial_inter_block import TrivialInterBlockDependencyScheme
 
 
-class QBFParser:
+class QBFParser(InstanceParser):
     @staticmethod
-    def from_file(
-        path: Union[str, Path],
-        dependency_scheme_class=TrivialInterBlockDependencyScheme,
-    ) -> Instance:
+    def from_file(path: Union[str, Path]) -> Instance:
+        path = Path(path)
         with open(path, "r") as f:
             content = f.read()
-        return QBFParser.from_qdimacs(content, dependency_scheme_class)
+        return QBFParser.from_qdimacs(content)
 
     @staticmethod
-    def from_qdimacs(
-        content: str, dependency_scheme_class=TrivialInterBlockDependencyScheme
-    ) -> Instance:
+    def from_qdimacs(content: str) -> Instance:
         lines = content.splitlines()
 
         # Generator to yield tokens (numbers and keywords)
@@ -90,6 +86,4 @@ class QBFParser:
         if not header_parsed:
             raise ValueError("No problem line found")
 
-        return Instance(
-            num_vars, num_clauses, quantifiers, clauses, dependency_scheme_class
-        )
+        return Instance(num_vars, num_clauses, quantifiers, clauses)

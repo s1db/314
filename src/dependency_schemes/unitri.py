@@ -1,5 +1,5 @@
 from src.dependency_schemes.triangle import TriangleDependencyScheme
-from src.instance import Instance
+from typing import List, Tuple
 
 
 class UniTriDependencyScheme(TriangleDependencyScheme):
@@ -13,10 +13,15 @@ class UniTriDependencyScheme(TriangleDependencyScheme):
     then u is removed from y's dependencies (assuming x covers u).
     """
 
-    def __init__(self, instance: Instance):
+    def __init__(
+        self,
+        num_vars: int,
+        clauses: List[List[int]],
+        quantifiers: List[Tuple[str, List[int]]],
+    ):
         # Store full (unreduced) dependencies for transitive closure checks
         self.full_dependencies = {}
-        super().__init__(instance)
+        super().__init__(num_vars, clauses, quantifiers)
 
     def compute(self):
         """
@@ -24,7 +29,7 @@ class UniTriDependencyScheme(TriangleDependencyScheme):
         """
         # 1. Map literals to clauses
         lit_to_clauses = {}
-        for i, clause in enumerate(self.instance.clauses):
+        for i, clause in enumerate(self.clauses):
             for lit in clause:
                 if lit not in lit_to_clauses:
                     lit_to_clauses[lit] = []
@@ -33,7 +38,7 @@ class UniTriDependencyScheme(TriangleDependencyScheme):
         # Flatten quantifiers to list of variables with their types
         flat_prefix = []
         var_to_qtype = {}
-        for q_type, vars in self.instance.quantifiers:
+        for q_type, vars in self.quantifiers:
             for v in vars:
                 flat_prefix.append((q_type, v))
                 var_to_qtype[v] = q_type
@@ -62,7 +67,7 @@ class UniTriDependencyScheme(TriangleDependencyScheme):
                     clauses.extend(lit_to_clauses[-v])
                 x_var_to_clauses[v] = list(set(clauses))
 
-            adj_core = {idx: {} for idx in range(len(self.instance.clauses))}
+            adj_core = {idx: {} for idx in range(len(self.clauses))}
             for v, c_idxs in x_var_to_clauses.items():
                 for k in range(len(c_idxs)):
                     c1 = c_idxs[k]

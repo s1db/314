@@ -1,8 +1,8 @@
-from typing import Set, Dict, TYPE_CHECKING
+from typing import Set, Dict, List, Tuple
+import logging
 
-if TYPE_CHECKING:
-    from src.candidate_function import CandidateFunction
-from src.instance import Instance
+logger = logging.getLogger(__name__)
+
 from .base import DependencyScheme, DependencyViolationError
 
 
@@ -13,8 +13,13 @@ class LearnedDependencyScheme(DependencyScheme):
     2. Intra-block dependencies are allowed and learned, providing they don't form cycles.
     """
 
-    def __init__(self, instance: Instance):
-        super().__init__(instance)
+    def __init__(
+        self,
+        num_vars: int,
+        clauses: List[List[int]],
+        quantifiers: List[Tuple[str, List[int]]],
+    ):
+        super().__init__(num_vars, clauses, quantifiers)
 
         # Precompute the "hard" constraints based on QBF prefix
         self.hard_predecessors: Dict[int, Set[int]] = {}
@@ -25,7 +30,7 @@ class LearnedDependencyScheme(DependencyScheme):
         """Analyzes the QBF prefix to populate hard constraints."""
         all_previous_vars = set()
 
-        for q_type, var_list in self.instance.quantifiers:
+        for q_type, var_list in self.quantifiers:
             current_block_vars = set(var_list)
 
             if q_type == "e":
@@ -44,6 +49,32 @@ class LearnedDependencyScheme(DependencyScheme):
 
             # Add current block to "previous" for the next blocks
             all_previous_vars.update(current_block_vars)
+
+    def _is_reachable(self, start: int, target: int) -> bool:
+        """Returns True if target is reachable from start (DFS)."""
+        if start == target:
+            return True
+
+        stack = [start]
+        visited = {start}
+        while stack:
+            node = stack.pop()
+            if node == target:
+                return True
+            for neighbor in self.get_dependencies(node):
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    stack.append(neighbor)
+        return False
+
+    def compute(self):
+        """
+        Learned scheme is dynamic; initial computation is handled in __init__ via _initialize_structure.
+        """
+        logger.info(
+            "Learning based dependency scheme, dependencies will be computed during learning."
+        )
+        pass
 
     def get_allowed_variables(self, target_variable: int) -> Set[int]:
         """
@@ -64,31 +95,6 @@ class LearnedDependencyScheme(DependencyScheme):
 
         allowed.update(valid_peers)
         return allowed
-
-    def compute(self):
-        pass
-
-    def register_candidates(
-        self, candidates: Dict[int, "CandidateFunction"], logger=None
-    ):
-        """
-        Registers candidates and updates dependencies.
-        """
-        if logger is None:
-            import logging
-
-            logger = logging.getLogger(__name__)
-
-        for y, func in candidates.items():
-            # IMPORTANT: Register the learned dependencies!
-            try:
-                logger.info(f"Registering dependencies for {y}: {func}")
-                self.update_dependencies(y, func.support)
-            except Exception as e:
-                logger.warning(
-                    f"Initial candidate for {y} violates dependencies: {e}. Clearing support."
-                )
-                pass
 
     def update_dependencies(self, target_variable: int, used_variables: Set[int]):
         """
@@ -111,6 +117,7 @@ class LearnedDependencyScheme(DependencyScheme):
         """
         Adds dependency u -> v (u depends on v).
         Checks for cycles immediately.
+        Invalidates topological sort cache.
         """
         if u not in self.dependencies:
             self.dependencies[u] = set()
@@ -128,3 +135,6 @@ class LearnedDependencyScheme(DependencyScheme):
         # Ensure v exists in graph keys
         if v not in self.dependencies:
             self.dependencies[v] = set()
+
+        # Invalidate cache
+        self._topological_order = None

@@ -11,11 +11,13 @@ class TestUniTriDependencyScheme(unittest.TestCase):
 
         quantifiers = [("a", [1]), ("e", [2])]
         clauses = [[1, 2], [-1, -2]]
-        instance = Instance(
-            2, len(clauses), quantifiers, clauses, UniTriDependencyScheme
-        )
+        instance = Instance(2, len(clauses), quantifiers, clauses)
+        scheme = UniTriDependencyScheme(2, clauses, quantifiers)
+        instance.set_dependency_scheme(scheme)
 
-        scheme = UniTriDependencyScheme(instance)
+        scheme = UniTriDependencyScheme(
+            instance.num_vars, instance.clauses, instance.quantifiers
+        )
 
         # 2 depends on 1
         self.assertIn(1, scheme.dependencies.get(2, set()))
@@ -36,11 +38,13 @@ class TestUniTriDependencyScheme(unittest.TestCase):
             [1, 3],
             [-1, -3],  # 3 depends on 1
         ]
-        instance = Instance(
-            3, len(clauses), quantifiers, clauses, UniTriDependencyScheme
-        )
+        instance = Instance(3, len(clauses), quantifiers, clauses)
+        scheme = UniTriDependencyScheme(3, clauses, quantifiers)
+        instance.set_dependency_scheme(scheme)
 
-        scheme = UniTriDependencyScheme(instance)
+        scheme = UniTriDependencyScheme(
+            instance.num_vars, instance.clauses, instance.quantifiers
+        )
 
         deps_2 = scheme.full_dependencies.get(2, set())  # Check full deps for coverage
         self.assertIn(1, deps_2)

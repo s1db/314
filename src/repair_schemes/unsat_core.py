@@ -46,9 +46,6 @@ class UnsatCoreRepairScheme(RepairScheme):
 
                 logger.debug(f"Checking hypothesis for variable {var}...")
 
-                # Step A: Define Context (Allowed / Upstream)
-                allowed = self.dep_scheme.get_allowed_variables(var)
-
                 # Step B: Construct Hypothesis Query
                 assumptions = []
                 # Always fix X variables from assignment (they are upstream roots)
@@ -58,10 +55,11 @@ class UnsatCoreRepairScheme(RepairScheme):
                         assumptions.append(x if val else -x)
 
                 for y in y_vars:
-                    if y in allowed:
-                        if y in assignment:
-                            val = assignment[y]
-                            assumptions.append(y if val else -y)
+                    if y == var:
+                        continue  # handled separately below as the suspect
+                    if y in assignment:
+                        val = assignment[y]
+                        assumptions.append(y if val else -y)
 
                 # The Suspect fixed to BAD value
                 bad_val = assignment[var]
@@ -75,6 +73,9 @@ class UnsatCoreRepairScheme(RepairScheme):
                     logger.debug(
                         f"  SAT (False Alarm). {var} might not be the root cause."
                     )
+                    logger.debug(
+                        "  PySAT model satisfies the matrix because it changed downstream/free variables."
+                    )
 
                     # Dynamic Expansion
                     model = sat_oracle.get_model()
@@ -85,11 +86,21 @@ class UnsatCoreRepairScheme(RepairScheme):
                                 model_vals[abs(lit)] = lit > 0
 
                         new_suspects = []
+                        differences = []
                         for y in y_vars:
                             if y in model_vals and y in assignment:
                                 if model_vals[y] != assignment[y]:
+                                    differences.append(
+                                        f"var:{y} assignment:{assignment[y]} -> model:{model_vals[y]}"
+                                    )
+
                                     if y not in sorted_suspects and y not in repaired:
                                         new_suspects.append(y)
+
+                        if differences:
+                            logger.debug(
+                                f"  Differences found: {', '.join(differences)}"
+                            )
 
                         if new_suspects:
                             logger.info(

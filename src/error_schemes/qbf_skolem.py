@@ -69,7 +69,7 @@ class QBFSkolemErrorFormula(ErrorFormula):
         candidates: dict,
         x_vars: List[int],
         y_vars: List[int],
-    ) -> tuple:
+    ) -> tuple[bool, dict | None]:
 
         # 1. Check for Counter-Example (Exists X. ~F(X, Psi(X)))
         with tempfile.NamedTemporaryFile(suffix=".v", delete=False, mode="w") as tmp:
@@ -81,113 +81,39 @@ class QBFSkolemErrorFormula(ErrorFormula):
             )
 
             abc = AbcInterface()
-            result_bits = abc.check_sat(tmp_path_check)
+            # check_sat returns None if UNSAT, dict if SAT
+            result_map = abc.check_sat(tmp_path_check)
 
-            if result_bits is None:
-                return (False, None, None)
+            if result_map is None:
+                return (False, None)
 
-            # Parse X assignment from result_bits
-            # Order: vX... then ipY...
-            # We only care about X here to find the counter-example content.
+            # Parse X assignment from result_map
+            # We want v{x} and ip{y} (candidate outputs used as Y)
             assignment = {}
-            bit_idx = 0
+
+            # 1. X vars
             for x in x_vars:
-                if bit_idx < len(result_bits):
-                    assignment[x] = bool(result_bits[bit_idx])
-                    bit_idx += 1
+                name = f"v{x}"
+                assert name in result_map, f"Missing assignment for X variable {name}"
+                assignment[x] = bool(result_map[name])
 
-            # Also capture Y' (candidate outputs) for debugging/FL
+            # 2. Y' vars (Candidate outputs)
             for y in y_vars:
-                if bit_idx < len(result_bits):
-                    assignment[y] = bool(result_bits[bit_idx])
-                    bit_idx += 1
+                name = f"ip{y}"
+                assert name in result_map, f"Missing assignment for Y' variable {name}"
+                assignment[y] = bool(result_map[name])
 
-            # 2. Compute Oracle Y for this X (Solve F(fixed_X, Y))
-            # We need a valid Y assignment for FL to compare against.
+            # Note: Oracle Y generation is removed as per user request.
 
-            # Create a temporary Verilog file for Oracle Helper
-            with tempfile.NamedTemporaryFile(
-                suffix=".v", delete=False, mode="w"
-            ) as tmp_oracle:
-                tmp_path_oracle = tmp_oracle.name
+            return (True, assignment)
 
-            # Generate Oracle Module: Fix X inputs, solve for Y
-            oracle_verilog = self._generate_oracle_module(
-                formula_clauses, x_vars, y_vars, assignment
-            )
-            with open(tmp_path_oracle, "w") as f:
-                f.write(oracle_verilog)
-
-            oracle_bits = abc.check_sat(tmp_path_oracle)
-
-            oracle_assignment = {}
-            if oracle_bits is None:
-                # Should not happen for True QBF (forall X exists Y)
-                # But if it does, it means F(X, .) is UNSAT, so no valid Y exists.
-                # FL might fail, but we can't provide one.
-                pass
-            else:
-                # Parse Y from oracle_bits
-                # Order in _generate_oracle_module is just Y variables
-                y_idx = 0
-                for y in y_vars:
-                    if y_idx < len(oracle_bits):
-                        oracle_assignment[y] = bool(oracle_bits[y_idx])
-                        y_idx += 1
-
-            if os.path.exists(tmp_path_oracle):
-                os.remove(tmp_path_oracle)
-
-            return (True, assignment, oracle_assignment)
+        except RuntimeError as e:
+            # Re-raise to be handled by solver or for debugging
+            raise e
 
         finally:
             if os.path.exists(tmp_path_check):
                 os.remove(tmp_path_check)
-
-    def _generate_oracle_module(
-        self,
-        clauses: List[List[int]],
-        x_vars: List[int],
-        y_vars: List[int],
-        assignment: dict,
-    ) -> str:
-        # Generate FORMULA module but wrap it to fix X inputs
-        # Use existing clauses_to_verilog for the core spec
-
-        core_module = VerilogGenerator.clauses_to_verilog(
-            clauses, "FORMULA", x_vars, y_vars
-        )
-
-        # Wrapper module
-        # Inputs: vY... (we want to find these)
-        # Output: out
-
-        y_inputs = [f"v{y}" for y in y_vars]
-        verilog = f"{core_module}\n"
-        verilog += f"module ORACLE ( {', '.join(y_inputs)}, out );\n"
-        for yi in y_inputs:
-            verilog += f"  input {yi};\n"
-        verilog += "  output out;\n\n"
-
-        # Instantiate FORMULA
-        # Fix X ports to constants from assignment
-
-        wires_map = {}
-        for x in x_vars:
-            # Wire v{x} to 1'b1 or 1'b0
-            val = assignment.get(x, False)
-            bit = "1'b1" if val else "1'b0"
-            wires_map[f"v{x}"] = bit
-
-        for y in y_vars:
-            wires_map[f"v{y}"] = f"v{y}"
-
-        wires_map["out"] = "out"
-
-        verilog += VerilogGenerator.instantiate_module("FORMULA", "F_ORACLE", wires_map)
-        verilog += "endmodule\n"
-
-        return verilog
 
     def _generate_main_module(self, x_vars: List[int], y_vars: List[int]) -> str:
         # Inputs: X (vX), Y' (ipY)
