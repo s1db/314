@@ -1,4 +1,4 @@
-from src.dependency_schemes import LearnedDependencyScheme
+from src.dependency_schemes.mutable import MutableDependencyScheme
 from typing import List, Dict, Set, Tuple
 import numpy as np
 import logging
@@ -28,7 +28,7 @@ class ManthanGuesser(BaseCandidateFunctionGuesser):
         Learns candidate functions for all existential variables using Decision Trees.
         Updates dependencies based on learned functions.
         """
-        assert isinstance(dependency_scheme, LearnedDependencyScheme)
+        assert isinstance(dependency_scheme, MutableDependencyScheme)
         if samples.size == 0:
             logger.warning("No samples provided to ManthanGuesser.")
             return {}
@@ -52,7 +52,7 @@ class ManthanGuesser(BaseCandidateFunctionGuesser):
         # Iterate through each existential variable
         for target_y in y_vars:
             # Use potential dependencies (preceding vars in QBF prefix)
-            allowed_vars = dependency_scheme.potential_dependencies.get(target_y, set())
+            allowed_vars = dependency_scheme.get_allowed_variables(target_y)
 
             # Map features to columns in data_matrix
             # We need a list of (col_idx, var_id)
@@ -87,7 +87,7 @@ class ManthanGuesser(BaseCandidateFunctionGuesser):
 
                 candidates[target_y] = candidate_func
 
-                dependency_scheme.verify_dependencies()
+                dependency_scheme.verify()
 
             except Exception as e:
                 logger.error(f"Failed to learn candidate for {target_y}: {e}")

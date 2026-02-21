@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Set, Dict, Optional, List
-from src.instance import Instance
+from typing import TYPE_CHECKING, Dict, List, Optional, Set, Type
+
+if TYPE_CHECKING:
+    from src.instance import Instance
 
 
 class DependencyViolationError(Exception):
@@ -12,47 +14,116 @@ class DependencyViolationError(Exception):
 class DependencyScheme(ABC):
     """
     Abstract base class for dependency schemes.
-    Manages the dependency graph and provides common algorithms (cycle detection, sorting).
+
+    ## Graph convention
+    `dependencies[u] = {v, ...}` means **u depends on v**:
+    v must be computed before u (v is a prerequisite of u).
+    Arrows point from dependent → dependency.
+
+    ## Construction
+    Do NOT instantiate directly. Use the factory classmethod::
+
+        scheme = MyScheme.build(instance)
+
+    This ensures `compute()` is always called after the subclass is fully
+    initialised, avoiding the "virtual call in __init__" anti-pattern.
+
+    ## Extending
+    - **Static schemes** (Standard, Triangle, Trivial): override `compute()` to
+      populate `self.dependencies` once; do not expose mutation methods.
+    - **Dynamic schemes** (Mutable): extend `MutableDependencyScheme` which adds
+      `update_dependencies` and `_add_edge`.
     """
 
-    def __init__(self, instance: Instance):
+    # ------------------------------------------------------------------ #
+    # Construction                                                         #
+    # ------------------------------------------------------------------ #
+
+    @classmethod
+    def build(
+        cls: Type["DependencyScheme"], instance: "Instance"
+    ) -> "DependencyScheme":
+        """
+        Factory method — the correct way to create any DependencyScheme.
+
+        Order of operations:
+        1. Allocate the object (bypass __init__ so subclasses control their own).
+        2. Run shared base initialisation (_base_init).
+        3. Run subclass-specific computation (compute).
+        4. Validate the resulting graph (verify).
+        """
+        obj = cls.__new__(cls)
+        obj._base_init(instance)
+        obj.compute()
+        obj.verify()
+        return obj
+
+    def _base_init(self, instance: "Instance") -> None:
+        """
+        Shared initialisation logic. Call this via super()._base_init(instance)
+        at the top of any subclass __init__ if you need custom attributes set
+        before compute() is called.
+        """
         self.instance = instance
+
+        # Graph: u -> {v, ...}  means u depends on v.
         self.dependencies: Dict[int, Set[int]] = {}
-        self.potential_dependencies: Dict[int, Set[int]] = {}
-        self.allowed_dependencies: Dict[int, Set[int]] = {}
 
-        dependencies = set()
-        for quantifier_block in self.instance.quantifiers:
-            dependencies.update(quantifier_block[1])
-            for var in quantifier_block[1]:
-                self.allowed_dependencies[var] = dependencies.copy()
+        # _prefix_scope[var] = all variables that appear in *strictly earlier*
+        # quantifier blocks — i.e. the maximum set quantifier prefix order permits
+        # var to depend on.  Subclasses may further restrict this in
+        # get_allowed_variables().
+        self._prefix_scope: Dict[int, Set[int]] = {}
+        self._compute_prefix_scope()
 
-        self.compute_potential_dependencies()
-        self.compute()
-        self.verify_dependencies()
+    def _compute_prefix_scope(self) -> None:
+        """Populate _prefix_scope from the quantifier prefix of the instance."""
+        previous: Set[int] = set()
+        for _q_type, var_list in self.instance.quantifiers:
+            for var in var_list:
+                self._prefix_scope[var] = previous.copy()
+            previous.update(var_list)
+
+    # ------------------------------------------------------------------ #
+    # Abstract interface                                                 #
+    # ------------------------------------------------------------------ #
 
     @abstractmethod
-    def compute(self):
-        pass
+    def compute(self) -> None:
+        """
+        Populate self.dependencies.
 
-    def compute_potential_dependencies(self):
+        Called once by build() after _base_init(). All variables that the scheme
+        cares about should be inserted as keys (even with empty sets) so that
+        graph algorithms can iterate over them.
         """
-        Computes potential dependencies based on the quantifier prefix.
-        For each variable, potential dependencies are all variables (X and Y)
-        that appear in previous quantifier blocks.
+
+    # ------------------------------------------------------------------ #
+    # Policy hook — override in subclasses to restrict/expand scope      #
+    # ------------------------------------------------------------------ #
+
+    def get_allowed_variables(self, target_variable: int) -> Set[int]:
         """
-        previous_quantifier_vars = set()
-        for quantifier in self.instance.quantifiers:
-            for var in quantifier[1]:
-                self.potential_dependencies[var] = previous_quantifier_vars.copy()
-            previous_quantifier_vars.update(quantifier[1])
+        Returns the set of variables that *target_variable* is permitted to depend on.
+
+        Default: the quantifier-prefix scope (_prefix_scope), i.e. everything in
+        strictly earlier blocks.  Static schemes (Standard, Triangle) typically
+        restrict this further.  MutableDependencyScheme expands it to include
+        same-block peers (subject to cycle avoidance).
+        """
+        return self._prefix_scope.get(target_variable, set())
+
+    # ------------------------------------------------------------------ #
+    # Read API                                                           #
+    # ------------------------------------------------------------------ #
 
     def get_dependencies(self, var: int) -> Set[int]:
+        """Direct dependencies of var (one hop)."""
         return self.dependencies.get(var, set())
 
     def get_transitive_dependencies(self, var: int) -> Set[int]:
-        """Returns all variables that `var` depends on transitively (descendants in dependency graph)."""
-        visited = set()
+        """All variables that var depends on transitively (full reachability)."""
+        visited: Set[int] = set()
         stack = [var]
         while stack:
             curr = stack.pop()
@@ -63,23 +134,49 @@ class DependencyScheme(ABC):
         return visited
 
     def get_total_order(self) -> List[int]:
-        """Returns a topological sort of all variables in the dependency graph."""
+        """
+        Topological sort of all variables in the dependency graph.
+
+        Returns variables in *computation order*: prerequisites come before
+        the variables that depend on them.
+        """
         return self.topological_sort()
 
     def topological_sort(self, nodes: Optional[Set[int]] = None) -> List[int]:
+        """
+        Kahn's algorithm on the dependency graph.
+
+        Parameters
+        ----------
+        nodes:
+            Subset of nodes to sort.  Defaults to all nodes in self.dependencies.
+
+        Returns
+        -------
+        List[int]
+            Variables in computation order (prerequisites first).
+
+        Raises
+        ------
+        DependencyViolationError
+            If a cycle is detected.
+        """
         if nodes is None:
             nodes = set(self.dependencies.keys())
             for deps in self.dependencies.values():
                 nodes.update(deps)
 
-        in_degree = {n: 0 for n in nodes}
+        # in_degree counts how many nodes in `nodes` depend on each node v.
+        # (i.e., how many u have v in dependencies[u])
+        in_degree: Dict[int, int] = {n: 0 for n in nodes}
         for u in nodes:
             for v in self.get_dependencies(u):
                 if v in nodes:
                     in_degree[v] += 1
 
+        # Start with nodes nothing depends on (they are deepest dependencies).
         queue = [n for n, deg in in_degree.items() if deg == 0]
-        result = []
+        result: List[int] = []
         while queue:
             u = queue.pop(0)
             result.append(u)
@@ -90,26 +187,23 @@ class DependencyScheme(ABC):
                         queue.append(v)
 
         if len(result) != len(nodes):
-            # This implies a cycle
             raise DependencyViolationError("Cycle detected during topological sort")
 
-        # In our dependency graph [Dependent -> Dependency], result is [Independent, ..., Dependent]
-        # Wait, if U -> V, U depends on V. In-degree 0 means nothing depends on it.
-        # Result [NothingDependsOnIt, ..., DependencyChain]
-        # So it's [Dependent, ..., Dependency].
-        # Computation order should be reversed.
+        # result is currently [deepest-dependency ... dependent].
+        # Reverse so prerequisites come first.
         return list(reversed(result))
 
     def sort_by_dependency_order(self, variables: List[int]) -> List[int]:
         """
-        Sorts the given variables based on their topological order in the dependency graph.
-        Variables that appear earlier in the dependency order come first.
-        Raises DependencyViolationError if a cycle is detected or if a variable is not in the dependency graph.
+        Sort *variables* so prerequisites appear before their dependents.
+
+        Raises DependencyViolationError if a cycle is detected or a variable is
+        not present in the dependency graph.
         """
         total_order = self.get_total_order()
         order_map = {node: i for i, node in enumerate(total_order)}
 
-        def get_order(variable):
+        def get_order(variable: int) -> int:
             if variable not in order_map:
                 raise DependencyViolationError(
                     f"Variable {variable} not found in dependency graph order."
@@ -118,19 +212,52 @@ class DependencyScheme(ABC):
 
         return sorted(variables, key=get_order)
 
-    def verify_dependencies(self) -> None:
+    def get_partial_order(self, variable: int) -> List[int]:
         """
-        Comprehensive verification of the dependency graph:
-        1. Quantifier order: variables should only depend on variables in current or previous blocks.
-        2. No circular dependencies.
-        3. All variables in dependencies must be quantified in the instance and within valid range.
-        4. Universal variables should not have outgoing dependencies.
-        5. No self-dependencies.
+        Topological order of *variable* and all its transitive dependencies.
+
+        Returns [deepest-prerequisite, ..., variable] (computation order).
         """
-        # Build map of variable to its quantifier block index and type
-        var_to_info = {}
-        for idx, (q_type, vars) in enumerate(self.instance.quantifiers):
-            for v in vars:
+        descendants = self.get_transitive_dependencies(variable)
+        nodes = descendants | {variable}
+        return self.topological_sort(nodes)
+
+    def _is_reachable(self, start: int, target: int) -> bool:
+        """Return True if *target* is reachable from *start* via dependency edges."""
+        if start == target:
+            return True
+        stack = [start]
+        visited = {start}
+        while stack:
+            node = stack.pop()
+            if node == target:
+                return True
+            for neighbour in self.get_dependencies(node):
+                if neighbour not in visited:
+                    visited.add(neighbour)
+                    stack.append(neighbour)
+        return False
+
+    # ------------------------------------------------------------------ #
+    # Validation                                                         #
+    # ------------------------------------------------------------------ #
+
+    def verify(self) -> None:
+        """
+        Validate the dependency graph after compute().
+
+        Checks:
+        1. All variables in the graph are quantified in the instance.
+        2. Variables are within valid range [1, num_vars].
+        3. Universal variables have no outgoing dependencies.
+        4. No self-dependencies.
+        5. Quantifier-order: a variable may only depend on variables from
+           the same or earlier quantifier blocks.
+        6. No cycles.
+        """
+        var_to_info: Dict[int, tuple[int, str]] = {}
+        for idx, (q_type, var_list) in enumerate(self.instance.quantifiers):
+            for v in var_list:
                 var_to_info[v] = (idx, q_type)
 
         for u, deps in self.dependencies.items():
@@ -145,96 +272,24 @@ class DependencyScheme(ABC):
             for v in deps:
                 if v == u:
                     raise ValueError(
-                        f"Self-dependency detected: variable {u} depends on itself."
+                        f"Self-dependency: variable {u} depends on itself."
                     )
 
                 if v not in var_to_info:
-                    raise ValueError(f"Dependency variable {v} is not quantified.")
+                    raise ValueError(f"Dependency target {v} is not quantified.")
 
                 v_block_idx, _ = var_to_info[v]
                 if v_block_idx > u_block_idx:
                     raise ValueError(
-                        f"Quantifier order violation: {u} (block {u_block_idx}) "
+                        f"Quantifier-order violation: {u} (block {u_block_idx}) "
                         f"depends on {v} (block {v_block_idx})."
                     )
 
-        # Range check
         for v in var_to_info:
             if not (1 <= v <= self.instance.num_vars):
                 raise ValueError(
                     f"Variable {v} is out of valid range [1, {self.instance.num_vars}]."
                 )
 
-        # Cycle detection
+        # Cycle check via topological sort
         self.topological_sort()
-
-    def get_partial_order(self, variable: int) -> List[int]:
-        """
-        Returns transitive closure of dependencies for `variable`.
-        Computation order: [Dependency, ..., Variable]
-        """
-        descendants = self.get_transitive_dependencies(variable)
-        nodes = descendants | {variable}
-        return self.topological_sort(nodes)
-
-    def _is_reachable(self, start: int, target: int) -> bool:
-        """Returns True if target is reachable from start (DFS)."""
-        if start == target:
-            return True
-
-        stack = [start]
-        visited = {start}
-        while stack:
-            node = stack.pop()
-            if node == target:
-                return True
-            for neighbor in self.get_dependencies(node):
-                if neighbor not in visited:
-                    visited.add(neighbor)
-                    stack.append(neighbor)
-        return False
-
-    def get_allowed_variables(self, target_variable: int) -> Set[int]:
-        """
-        Returns the set of variables that `target_variable` is allowed to depend on.
-        """
-        return self.allowed_dependencies[target_variable]
-
-    def update_dependencies(self, target_variable: int, used_variables: Set[int]):
-        """
-        Updates the dependency scheme
-        """
-        # 1. Validation against scheme policy
-        allowed = self.get_allowed_variables(target_variable)
-        invalid = used_variables - allowed
-        if invalid:
-            raise DependencyViolationError(
-                f"Variable {target_variable} depends on forbidden variables: {invalid}. "
-                f"Valid scope: {allowed}"
-            )
-
-        # 2. Update Graph structure
-        for dep in used_variables:
-            self._add_edge(target_variable, dep)
-
-    def _add_edge(self, u: int, v: int):
-        """
-        Adds dependency u -> v (u depends on v).
-        Checks for cycles immediately.
-        """
-        if u not in self.dependencies:
-            self.dependencies[u] = set()
-
-        # If edge already exists, skip
-        if v in self.dependencies[u]:
-            return
-
-        # Check if v depends on u (which would make u -> v a cycle)
-        # i.e., is u reachable from v?
-        if self._is_reachable(v, u):
-            raise DependencyViolationError(f"Dependency {u} -> {v} creates a cycle.")
-
-        self.dependencies[u].add(v)
-        # Ensure v exists in graph keys
-        if v not in self.dependencies:
-            self.dependencies[v] = set()

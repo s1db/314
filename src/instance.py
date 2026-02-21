@@ -1,6 +1,9 @@
-from typing import List, Tuple
+from typing import TYPE_CHECKING, List, Tuple, Type
 from functools import cache
 import logging
+
+if TYPE_CHECKING:
+    from src.dependency_schemes.base import DependencyScheme
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +15,7 @@ class Instance:
         num_clauses: int,
         quantifiers: List[Tuple[str, List[int]]],
         clauses: List[List[int]],
-        dependency_scheme_class,
+        dependency_scheme_class: "Type[DependencyScheme]",
     ):
         self.num_vars = num_vars
         self.num_clauses = num_clauses
@@ -21,7 +24,7 @@ class Instance:
 
         self.validate()
 
-        self.dependency_scheme = dependency_scheme_class(self)
+        self.dependency_scheme = dependency_scheme_class.build(self)
 
     def validate(self) -> None:
         if self.num_clauses != len(self.clauses):

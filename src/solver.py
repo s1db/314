@@ -5,7 +5,7 @@ import logging
 from src.instance import Instance
 from src.instance_parsers.qbf import QBFParser
 from src.sampling_schemes.uniform import UniformSampler
-from src.dependency_schemes.learned import LearnedDependencyScheme
+from src.dependency_schemes.mutable import MutableDependencyScheme
 from src.guessing_schemes.manthan import ManthanGuesser
 from src.candidate_function import FunctionManager, CandidateFunction
 from src.error_schemes.base import ErrorFormula
@@ -38,7 +38,7 @@ class Solver:
         self.logger.info(f"Parsing instance: {instance_path}")
         # Pass the desired dependency scheme class to the parser
         self.instance: Instance = QBFParser.from_file(
-            instance_path, dependency_scheme_class=LearnedDependencyScheme
+            instance_path, dependency_scheme_class=MutableDependencyScheme
         )
 
         self.logger.info(
@@ -52,7 +52,7 @@ class Solver:
 
         # 2. Initialize Components
         # The dependency scheme is now initialized within the Instance
-        self.dep_scheme = self.instance.dependency_scheme
+        self.dep_scheme: MutableDependencyScheme = self.instance.dependency_scheme
 
         self.sampler = UniformSampler(all_vars, self.instance.clauses)
         self.function_manager = FunctionManager()

@@ -1,4 +1,10 @@
-from .learned import LearnedDependencyScheme
-from .empty import EmptyDependencyScheme
+from .mutable import MutableDependencyScheme
+from .trivial import TrivialDependencyScheme
+from .base import DependencyScheme, DependencyViolationError
 
-__all__ = ["LearnedDependencyScheme", "EmptyDependencyScheme"]
+__all__ = [
+    "DependencyScheme",
+    "DependencyViolationError",
+    "MutableDependencyScheme",
+    "TrivialDependencyScheme",
+]
