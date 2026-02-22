@@ -1,4 +1,4 @@
-from src.dependency_schemes import LearnedDependencyScheme
+from src.dependency_schemes.mutable import MutableDependencyScheme
 from typing import List, Dict, Set, Tuple
 import numpy as np
 import logging
@@ -23,19 +23,21 @@ class ManthanGuesser(BaseCandidateFunctionGuesser):
         samples: np.ndarray,
         function_manager: FunctionManager,
         dependency_scheme: DependencyScheme,
+        initial_candidates: Dict[int, CandidateFunction] | None = None,
     ) -> Dict[int, CandidateFunction]:
         """
         Learns candidate functions for all existential variables using Decision Trees.
         Updates dependencies based on learned functions.
         """
-        assert isinstance(dependency_scheme, LearnedDependencyScheme)
+        assert isinstance(dependency_scheme, MutableDependencyScheme)
         if samples.size == 0:
             logger.warning("No samples provided to ManthanGuesser.")
             return {}
 
         y_vars = instance.get_existential_vars()
-
-        candidates: Dict[int, CandidateFunction] = {}
+        candidates: Dict[int, CandidateFunction] = (
+            initial_candidates.copy() if initial_candidates else {}
+        )
 
         # Map variable ID to column index in samples
         var_to_col = {
@@ -51,8 +53,15 @@ class ManthanGuesser(BaseCandidateFunctionGuesser):
 
         # Iterate through each existential variable
         for target_y in y_vars:
+            # Skip if already resolved and not repairable (e.g. by preprocessing)
+            if target_y in candidates and not candidates[target_y].repairable:
+                logger.debug(
+                    f"Skipping variable {target_y} as it is already resolved and non-repairable."
+                )
+                continue
+
             # Use potential dependencies (preceding vars in QBF prefix)
-            allowed_vars = dependency_scheme.potential_dependencies.get(target_y, set())
+            allowed_vars = dependency_scheme.prefix_scope.get(target_y, set())
 
             # Map features to columns in data_matrix
             # We need a list of (col_idx, var_id)
@@ -87,6 +96,8 @@ class ManthanGuesser(BaseCandidateFunctionGuesser):
 
                 candidates[target_y] = candidate_func
 
+                # Update dependencies with what the tree actually used
+                dependency_scheme.update_dependencies(target_y, used_vars)
                 dependency_scheme.verify_dependencies()
 
             except Exception as e:

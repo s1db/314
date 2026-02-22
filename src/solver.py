@@ -5,12 +5,13 @@ import logging
 from src.instance import Instance
 from src.instance_parsers.qbf import QBFParser
 from src.sampling_schemes.uniform import UniformSampler
-from src.dependency_schemes.learned import LearnedDependencyScheme
+from src.dependency_schemes.mutable import MutableDependencyScheme
 from src.guessing_schemes.manthan import ManthanGuesser
 from src.candidate_function import FunctionManager, CandidateFunction
 from src.error_schemes.base import ErrorFormula
 from src.error_schemes.bfns import BFnSErrorFormula
 from src.fault_localization_schemes import FaultLocalizationScheme
+from src.preprocessing.base import Preprocessor
 from src.repair_schemes.base import RepairScheme
 from src.outputs.verilog_skolem import write_verilog_skolem
 from src.outputs.aiger_skolem import write_aiger_skolem
@@ -26,6 +27,7 @@ class Solver:
         max_iterations: int = 1000,
         cert_formats: List[str] | None = None,
         error_formula_cls: Type[ErrorFormula] = BFnSErrorFormula,
+        preprocessors: List[Preprocessor] | None = None,
     ):
 
         self.logger = logging.getLogger(__name__)
@@ -33,12 +35,13 @@ class Solver:
         self.num_samples = num_samples
         self.max_iterations = max_iterations
         self.cert_formats = cert_formats if cert_formats else ["verilog"]
+        self.preprocessors = preprocessors if preprocessors else []
 
         # 1. Parse Instance
         self.logger.info(f"Parsing instance: {instance_path}")
         # Pass the desired dependency scheme class to the parser
         self.instance: Instance = QBFParser.from_file(
-            instance_path, dependency_scheme_class=LearnedDependencyScheme
+            instance_path, dependency_scheme_class=MutableDependencyScheme
         )
 
         self.logger.info(
@@ -68,6 +71,23 @@ class Solver:
         self.candidates: Dict[int, CandidateFunction] = {}
 
     def solve(self):
+        # Phase 0: Preprocessing
+        if self.preprocessors:
+            self.logger.info("Running %d preprocessor(s)...", len(self.preprocessors))
+            for preprocessor in self.preprocessors:
+                preprocessor.run(
+                    self.instance.clauses,
+                    self.x_vars,
+                    self.y_vars,
+                    self.candidates,
+                    self.function_manager,
+                )
+            resolved = [v for v, f in self.candidates.items() if not f.repairable]
+            if resolved:
+                self.logger.info(
+                    "Preprocessing resolved %d variables: %s", len(resolved), resolved
+                )
+
         # Phase 1: Sampling
         self.logger.info(f"Generating {self.num_samples} samples...")
         samples = self.sampler.sample(self.num_samples)
@@ -80,19 +100,12 @@ class Solver:
 
         # Phase 2: Candidate Learning
         self.candidates = self.learner.guess_candidates(
-            self.instance, samples, self.function_manager, self.dep_scheme
+            self.instance,
+            samples,
+            self.function_manager,
+            self.dep_scheme,
+            self.candidates,
         )
-
-        for y, func in self.candidates.items():
-            self.logger.info(f"Learned candidate for {y}: {func}")
-            # IMPORTANT: Register the learned dependencies!
-            try:
-                self.dep_scheme.update_dependencies(y, func.support)
-            except Exception as e:
-                self.logger.warning(
-                    f"Initial candidate for {y} violates dependencies: {e}. Clearing support."
-                )
-                pass
 
         # Phase 3: Verification Loop
         self.logger.info("Entering verification loop...")
@@ -118,6 +131,13 @@ class Solver:
             # 2. Fault Localization
             self.logger.info("Localizing faults...")
             suspects = self.fl_scheme.localize(self.candidates, assignment)
+
+            # Filter out non-repairable candidates (resolved by preprocessing)
+            suspects = [
+                s
+                for s in suspects
+                if s not in self.candidates or self.candidates[s].repairable
+            ]
 
             # 3. Repair
             self.candidates = self.repair_scheme.repair(

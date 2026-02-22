@@ -8,6 +8,7 @@ from src.repair_schemes.unsat_core import UnsatCoreRepairScheme
 from src.error_schemes.bfns import BFnSErrorFormula
 from src.error_schemes.qbf_skolem import QBFSkolemErrorFormula
 from src.utils.logging_config import setup_logging
+from src.preprocessing import ManthanUnatePreprocessor
 
 
 def parse_args():
@@ -44,6 +45,7 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-l",
         "--log-level",
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         default="INFO",
@@ -51,12 +53,14 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-lf",
         "--log-file",
         type=Path,
         help="Path to the log file. If not set, defaults to instance_name.log",
     )
 
     parser.add_argument(
+        "-c",
         "--cert-format",
         nargs="+",
         choices=["verilog", "aiger", "aiger_caqe"],
@@ -70,6 +74,14 @@ def parse_args():
         choices=["bfns", "qbf-skolem"],
         default="bfns",
         help="Error Scheme to verify candidates (BFnS, QBF-Skolem)",
+    )
+    parser.add_argument(
+        "-p",
+        "--preprocess",
+        nargs="*",
+        choices=["manthan-unate"],
+        default=[],
+        help="Preprocessing techniques to enable (e.g., manthan-unate)",
     )
 
     return parser.parse_args()
@@ -108,6 +120,14 @@ def main():
     repair_cls = repair_schemes[args.repair_scheme]
     error_cls = error_schemes[args.error_scheme]
 
+    # Setup Preprocessors
+    preprocessor_map = {
+        "manthan-unate": ManthanUnatePreprocessor,
+    }
+    preprocessors = []
+    for p_name in args.preprocess:
+        preprocessors.append(preprocessor_map[p_name]())
+
     logger.info(f"Initializing Solver for {args.instance}...")
     solver = Solver(
         instance_path=args.instance,
@@ -117,6 +137,7 @@ def main():
         max_iterations=args.max_iterations,
         cert_formats=args.cert_format,
         error_formula_cls=error_cls,
+        preprocessors=preprocessors,
     )
 
     solver.solve()

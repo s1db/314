@@ -1,6 +1,4 @@
-import os
-import pytest
-from src.candidate_function import FunctionManager, NodeType
+from src.candidate_function import FunctionManager
 from src.error_schemes.bfns import BFnSErrorFormula
 
 def test_bfns_generation(tmp_path):

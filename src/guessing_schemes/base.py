@@ -20,6 +20,7 @@ class BaseCandidateFunctionGuesser(ABC):
         samples: np.ndarray,
         function_manager: FunctionManager,
         dependency_scheme: DependencyScheme,
+        initial_candidates: Dict[int, CandidateFunction] | None = None,
     ) -> Dict[int, CandidateFunction]:
         """
         Learns candidate functions for all existential variables.

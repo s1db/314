@@ -1,5 +1,3 @@
-import pytest
-import numpy as np
 from src.sampling_schemes.uniform import UniformSampler
 
 

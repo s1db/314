@@ -1,5 +1,4 @@
 from src.repair_schemes.unsat_core import UnsatCoreRepairScheme
-from src.instance import Instance
 from src.candidate_function import FunctionManager
 
 

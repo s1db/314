@@ -15,41 +15,28 @@ def test_instance_initialization_success():
     quantifiers = [("e", [1, 2])]
     clauses = [[1, 2]]
 
-    class MockScheme:
-        def __init__(self, instance):
-            self.instance = instance
-
-    inst = Instance(2, 1, quantifiers, clauses, MockScheme)
+    inst = Instance(2, 1, quantifiers, clauses, TrivialDependencyScheme)
 
     assert inst.num_vars == 2
     assert inst.num_clauses == 1
     assert inst.quantifiers == quantifiers
     assert inst.clauses == clauses
-    assert isinstance(inst.dependency_scheme, MockScheme)
-    assert inst.dependency_scheme.instance == inst
+    assert isinstance(inst.dependency_scheme, TrivialDependencyScheme)
 
 
 def test_instance_validation_clause_mismatch():
     quantifiers = [("e", [1])]
-    clauses = []
-
-    class MockScheme:
-        def __init__(self, instance):
-            pass
+    clauses: List[List[int]] = []
 
     # Claim 1 clause, provide 0
     with pytest.raises(ValueError, match="Number of clauses"):
-        Instance(1, 1, quantifiers, clauses, MockScheme)
+        Instance(1, 1, quantifiers, clauses, TrivialDependencyScheme)
 
 
 def test_instance_validation_var_mismatch():
     quantifiers = [("e", [1])]
-    clauses = []
-
-    class MockScheme:
-        def __init__(self, instance):
-            pass
+    clauses: List[List[int]] = []
 
     # Claim 2 vars, provide 1
     with pytest.raises(ValueError, match="Number of variables"):
-        Instance(2, 0, quantifiers, clauses, MockScheme)
+        Instance(2, 0, quantifiers, clauses, TrivialDependencyScheme)

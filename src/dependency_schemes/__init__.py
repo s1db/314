@@ -1,4 +1,9 @@
-from .learned import LearnedDependencyScheme
-from .empty import EmptyDependencyScheme
+from .mutable import MutableDependencyScheme
+from .static import StaticDependencyScheme
+from .trivial import TrivialDependencyScheme
 
-__all__ = ["LearnedDependencyScheme", "EmptyDependencyScheme"]
+__all__ = [
+    "MutableDependencyScheme",
+    "StaticDependencyScheme",
+    "TrivialDependencyScheme",
+]

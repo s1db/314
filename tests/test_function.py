@@ -1,5 +1,5 @@
 import pytest
-from src.candidate_function import CandidateFunction, FunctionManager, NodeType
+from src.candidate_function import FunctionManager, NodeType
 
 @pytest.fixture
 def manager():

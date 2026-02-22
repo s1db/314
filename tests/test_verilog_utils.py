@@ -1,4 +1,3 @@
-import pytest
 from src.error_schemes.verilog_utils import VerilogGenerator
 
 def test_clauses_to_verilog_simple():

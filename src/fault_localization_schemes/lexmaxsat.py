@@ -1,4 +1,3 @@
-import logging
 from typing import Dict, List
 from pysat.formula import WCNF
 from pysat.examples.rc2 import RC2

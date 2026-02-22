@@ -1,6 +1,4 @@
 import pytest
-import os
-import sys
 
 # Try to import built extension
 try:

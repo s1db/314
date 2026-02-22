@@ -1,7 +1,6 @@
 from setuptools import setup, Extension, find_packages
 from Cython.Build import cythonize
 import os
-import sys
 
 # Define the ABC extension
 # We assume libabc.a is built in src/bindings/abc_lib

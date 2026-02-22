@@ -15,7 +15,7 @@ def test_deep_chain_dependencies():
     instance = QBFParser.from_file(test_file)
 
     # Run the Trivial Dependency Scheme
-    scheme = TrivialDependencyScheme(instance)
+    scheme = TrivialDependencyScheme(instance.quantifiers, instance.num_vars)
 
     # Assertions based on "Cumulative" dependencies (all previous variables)
 

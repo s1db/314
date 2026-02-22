@@ -4,7 +4,7 @@ from unittest.mock import create_autospec
 from src.guessing_schemes.manthan import ManthanGuesser
 from src.instance import Instance
 from src.candidate_function import FunctionManager
-from src.dependency_schemes.learned import LearnedDependencyScheme
+from src.dependency_schemes.mutable import MutableDependencyScheme
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -33,9 +33,9 @@ def test_manthan_guesser_simple():
     manager = FunctionManager()
 
     # Mock Dependency Scheme
-    dep_scheme = create_autospec(LearnedDependencyScheme)
-    # potential_dependencies is a dict
-    dep_scheme.potential_dependencies = {2: {1}}
+    dep_scheme = create_autospec(MutableDependencyScheme)
+    # prefix_scope is a dict
+    dep_scheme.prefix_scope = {2: {1}}
 
     candidates = guesser.guess_candidates(instance, samples, manager, dep_scheme)
 
@@ -66,8 +66,8 @@ def test_manthan_guesser_dependency_logic():
 
     # 2 allowed to see 1
     # 3 allowed to see 1, 2
-    dep_scheme = create_autospec(LearnedDependencyScheme)
-    dep_scheme.potential_dependencies = {2: {1}, 3: {1, 2}}
+    dep_scheme = create_autospec(MutableDependencyScheme)
+    dep_scheme.prefix_scope = {2: {1}, 3: {1, 2}}
 
     guesser = ManthanGuesser()
     manager = FunctionManager()

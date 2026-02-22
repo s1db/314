@@ -1,6 +1,4 @@
-import os
-import pytest
-from src.candidate_function import FunctionManager, NodeType
+from src.candidate_function import FunctionManager
 from src.error_schemes.qbf_skolem import QBFSkolemErrorFormula
 
 
