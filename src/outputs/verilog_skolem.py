@@ -78,11 +78,11 @@ def write_verilog_skolem(
         # Structural generation
         if node.node_type == NodeType.AND:
             children_exprs = [get_expr(child) for child in node.children]
-            expr = " & ".join(children_exprs) if children_exprs else "1'b1"
+            expr = f"({' & '.join(children_exprs)})" if children_exprs else "1'b1"
 
         elif node.node_type == NodeType.OR:
             children_exprs = [get_expr(child) for child in node.children]
-            expr = " | ".join(children_exprs) if children_exprs else "1'b0"
+            expr = f"({' | '.join(children_exprs)})" if children_exprs else "1'b0"
 
         elif node.node_type == NodeType.ITE:
             cond = get_expr(node.children[0])

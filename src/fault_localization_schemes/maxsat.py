@@ -60,7 +60,7 @@ class MaxSATScheme(FaultLocalizationScheme):
 
         if model is None:
             logger.warning(
-                "MaxSAT found no model. Matrix might be UNSAT for this counter-example."
+                "MaxSAT found no model. Assignment over universal variables makes the matrix UNSAT."
             )
             return []
 

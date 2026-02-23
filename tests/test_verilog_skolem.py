@@ -36,7 +36,7 @@ class TestVerilogSkolem:
         assert "input 1, 2;" in content
         assert "output 3;" in content
         # Check for assignment directly to output if not shared
-        assert "assign 3 = 1 & 2;" in content
+        assert "assign 3 = (2 & 1);" in content or "assign 3 = (1 & 2);" in content
 
     def test_dag_reuse(self, manager, tmp_path):
         # 4 Inputs, 2 Outputs

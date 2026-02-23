@@ -134,7 +134,10 @@ class Solver:
             suspects = self.fl_scheme.localize(
                 self.candidates, assignment, self.dep_scheme
             )
-
+            if len(suspects) == 0:
+                self.logger.warning("Valid Skolem functions but verification failed.")
+                print("s False")
+                return
             # Filter out non-repairable candidates (resolved by preprocessing)
             suspects = [
                 s
