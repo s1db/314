@@ -1,5 +1,6 @@
 from typing import List, Dict, Union
 
+
 class VerilogGenerator:
     """
     Helper class to generate strict Verilog 1995 code for ABC compatibility.
@@ -7,14 +8,16 @@ class VerilogGenerator:
     """
 
     @staticmethod
-    def clauses_to_verilog(clauses: List[List[int]], module_name: str, x_vars: List[int], y_vars: List[int]) -> str:
+    def clauses_to_verilog(
+        clauses: List[List[int]], module_name: str, x_vars: List[int], y_vars: List[int]
+    ) -> str:
         """
         Converts a list of CNF clauses to a Verilog module.
         Implements the 100-clause batching rule.
         """
         all_vars = sorted(list(set(x_vars + y_vars)))
         input_ports = [f"v{v}" for v in all_vars]
-        
+
         verilog = f"module {module_name} ( {', '.join(input_ports)}, out );\n"
         for v in all_vars:
             verilog += f"  input v{v};\n"
@@ -36,10 +39,10 @@ class VerilogGenerator:
                     literals.append(f"v{var}")
                 else:
                     literals.append(f"~v{var}")
-            
+
             # If empty clause, it's False (0)
-            rhs = " | ".join(literals) if literals else "0"
-            
+            rhs = " | ".join(literals) if literals else "1'b0"
+
             wire_name = f"t_{clause_idx}"
             verilog += f"  wire {wire_name};\n"
             verilog += f"  assign {wire_name} = {rhs};\n"
@@ -64,8 +67,8 @@ class VerilogGenerator:
 
         # Final assignment
         if not tcount_wires:
-             # No clauses -> True
-             verilog += "  assign out = 1;\n"
+            # No clauses -> True
+            verilog += "  assign out = 1;\n"
         else:
             verilog += f"  assign out = {' & '.join(tcount_wires)};\n"
 
@@ -73,7 +76,13 @@ class VerilogGenerator:
         return verilog
 
     @staticmethod
-    def functions_to_verilog(functions: Dict[int, str], module_name: str, x_vars: List[int], y_vars: List[int]) -> str:
+    def functions_to_verilog(
+        functions: Dict[int, str],
+        module_name: str,
+        x_vars: List[int],
+        y_vars: List[int],
+        extra_defs: List[str] | None = None,
+    ) -> str:
         """
         Converts candidate functions to a Verilog checking module.
         Checks: Y' <-> Psi(X)
@@ -83,14 +92,14 @@ class VerilogGenerator:
         # Inputs: X variables (inputs to functions) AND Y' variables (to check against)
         # Note: Y' variables in the port list should be named differently to avoid clash if we were using same namespace,
         # but here we use positional mapping so we can just name them "ip<var>" inside this module.
-        
-        # We need a defined order for ports. 
+
+        # We need a defined order for ports.
         # For simplicity, we assume the caller handles the external wiring.
-        # Here we define inputs as: [X_vars..., Y_vars...] 
+        # Here we define inputs as: [X_vars..., Y_vars...]
         # Internally X vars keep their names (as strings of ints), Y vars are "ip<y>"
-        
+
         input_ports = [f"v{x}" for x in x_vars] + [f"ip{y}" for y in y_vars]
-        
+
         verilog = f"module {module_name} ( {', '.join(input_ports)}, out );\n"
         for x in x_vars:
             verilog += f"  input v{x};\n"
@@ -98,25 +107,31 @@ class VerilogGenerator:
             verilog += f"  input ip{y};\n"
         verilog += "  output out;\n\n"
 
+        if extra_defs:
+            for d in extra_defs:
+                verilog += f"  {d}\n"
+
         wt_wires = []
         current_batch = []
         batch_idx = 0
-        
+
         # Ensure deterministic order
         for i, y in enumerate(y_vars):
-            expr = functions.get(y, "0") # Default to 0 if missing? Or should error.
-            
+            expr = functions.get(y, "1'b0")
+
             # Predict wire
             w_wire = f"w{y}"
             verilog += f"  wire {w_wire};\n"
             verilog += f"  assign {w_wire} = {expr};\n"
-            
-            # Equality check wire: ~(w ^ ip)
+
+            # Equality check wire: (w & ip) | (~w & ~ip)
             eq_wire = f"eq_{y}"
             verilog += f"  wire {eq_wire};\n"
-            verilog += f"  assign {eq_wire} = ~({w_wire} ^ ip{y});\n"
+            verilog += (
+                f"  assign {eq_wire} = ({w_wire} & ip{y}) | (~{w_wire} & ~ip{y});\n"
+            )
             current_batch.append(eq_wire)
-            
+
             # Batching rule: 10 variables
             if len(current_batch) >= 10:
                 batch_wire = f"wt_{batch_idx}"
@@ -125,32 +140,34 @@ class VerilogGenerator:
                 wt_wires.append(batch_wire)
                 current_batch = []
                 batch_idx += 1
-                
+
         # Remaining
         if current_batch:
             batch_wire = f"wt_{batch_idx}"
             verilog += f"  wire {batch_wire};\n"
             verilog += f"  assign {batch_wire} = {' & '.join(current_batch)};\n"
             wt_wires.append(batch_wire)
-            
+
         # Final output
         if not wt_wires:
             verilog += "  assign out = 1;\n"
         else:
             verilog += f"  assign out = {' & '.join(wt_wires)};\n"
-            
+
         verilog += "endmodule\n"
         return verilog
 
     @staticmethod
-    def instantiate_module(module_name: str, instance_name: str, ports: Union[List[str], Dict[str, str]]) -> str:
+    def instantiate_module(
+        module_name: str, instance_name: str, ports: Union[List[str], Dict[str, str]]
+    ) -> str:
         """
         Generates a module instantiation.
         If ports is a list, generates positional: module inst ( p1, p2 );
         If ports is a dict, generates named: module inst ( .p1(w1), .p2(w2) );
         """
         if isinstance(ports, dict):
-             connections = [f".{formal}({actual})" for formal, actual in ports.items()]
-             return f"  {module_name} {instance_name} ( {', '.join(connections)} );\n"
+            connections = [f".{formal}({actual})" for formal, actual in ports.items()]
+            return f"  {module_name} {instance_name} ( {', '.join(connections)} );\n"
         else:
-             return f"  {module_name} {instance_name} ( {', '.join(ports)} );\n"
+            return f"  {module_name} {instance_name} ( {', '.join(ports)} );\n"

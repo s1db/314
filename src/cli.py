@@ -2,13 +2,20 @@ import argparse
 import sys
 import logging
 from pathlib import Path
+from typing import Type, Dict
 from src.solver import Solver
-from src.fault_localization_schemes import MaxSATScheme, LexMaxSATScheme
+from src.fault_localization_schemes import (
+    FaultLocalizationScheme,
+    MaxSATScheme,
+    LexMaxSATScheme,
+)
+from src.repair_schemes.base import RepairScheme
 from src.repair_schemes.unsat_core import UnsatCoreRepairScheme
+from src.error_schemes.base import ErrorFormula
 from src.error_schemes.bfns import BFnSErrorFormula
 from src.error_schemes.qbf_skolem import QBFSkolemErrorFormula
 from src.utils.logging_config import setup_logging
-from src.preprocessing import ManthanUnatePreprocessor
+from src.preprocessing import ManthanUnatePreprocessor, GuessUnatePreprocessor
 
 
 def parse_args():
@@ -79,9 +86,15 @@ def parse_args():
         "-p",
         "--preprocess",
         nargs="*",
-        choices=["manthan-unate"],
+        choices=["manthan-unate", "guess-unate"],
         default=[],
-        help="Preprocessing techniques to enable (e.g., manthan-unate)",
+        help="Preprocessing techniques to enable (e.g., manthan-unate, guess-unate)",
+    )
+
+    parser.add_argument(
+        "--no-verify-unate",
+        action="store_true",
+        help="Disable formal verification in guess-unate preprocessor",
     )
 
     return parser.parse_args()
@@ -109,9 +122,14 @@ def main():
         sys.exit(1)
 
     # Map choices to classes
-    fl_schemes = {"maxsat": MaxSATScheme, "lexmaxsat": LexMaxSATScheme}
-    repair_schemes = {"unsat-core": UnsatCoreRepairScheme}
-    error_schemes = {
+    fl_schemes: Dict[str, Type[FaultLocalizationScheme]] = {
+        "maxsat": MaxSATScheme,
+        "lexmaxsat": LexMaxSATScheme,
+    }
+    repair_schemes: Dict[str, Type[RepairScheme]] = {
+        "unsat-core": UnsatCoreRepairScheme
+    }
+    error_schemes: Dict[str, Type[ErrorFormula]] = {
         "bfns": BFnSErrorFormula,
         "qbf-skolem": QBFSkolemErrorFormula,
     }
@@ -122,7 +140,8 @@ def main():
 
     # Setup Preprocessors
     preprocessor_map = {
-        "manthan-unate": ManthanUnatePreprocessor,
+        "manthan-unate": lambda: ManthanUnatePreprocessor(),
+        "guess-unate": lambda: GuessUnatePreprocessor(verify=not args.no_verify_unate),
     }
     preprocessors = []
     for p_name in args.preprocess:

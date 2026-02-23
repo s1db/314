@@ -150,7 +150,7 @@ def write_aiger_skolem(
                 return get_const_lit(0)  # Empty OR is False
 
             # We want ~( (~l1) & (~l2) & ... )
-            neg_lits = [l ^ 1 for l in lits]
+            neg_lits = [lit ^ 1 for lit in lits]
 
             curr_lit = neg_lits[0]
             for next_lit in neg_lits[1:]:
@@ -214,17 +214,17 @@ def write_aiger_skolem(
 
     # Header parameters
     M = aiger_var_counter
-    I = len(inputs)
+    num_inputs = len(inputs)
     L = 0
-    O = len(outputs) + 1 if include_result_output else len(outputs)
+    num_outputs = len(outputs) + 1 if include_result_output else len(outputs)
     A = len(and_gates)  # const one gate (already in and_gates)
 
     lines = []
-    lines.append(f"aag {M} {I} {L} {O} {A}")
+    lines.append(f"aag {M} {num_inputs} {L} {num_outputs} {A}")
 
     # Inputs
     # They are 2, 4, ... 2*I
-    for i in range(I):
+    for i in range(num_inputs):
         lines.append(str(2 * (i + 1)))
 
     # Latches (none)

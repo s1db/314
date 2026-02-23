@@ -1,5 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict
+from typing import List, Dict, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.dependency_schemes.base import DependencyScheme
+
 from src.candidate_function import CandidateFunction
 from src.instance import Instance
 
@@ -15,7 +19,10 @@ class FaultLocalizationScheme(ABC):
 
     @abstractmethod
     def localize(
-        self, candidates: Dict[int, CandidateFunction], assignment: Dict[int, bool]
+        self,
+        candidates: Dict[int, CandidateFunction],
+        assignment: Dict[int, bool],
+        dependency_scheme: Optional["DependencyScheme"] = None,
     ) -> List[int]:
         """
         Identifies suspicious candidates that might be causing the assignment to be unsatisfied.

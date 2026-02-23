@@ -26,7 +26,6 @@ def test_manthan_guesser_simple():
     samples = np.array([[0, 1], [1, 0], [0, 1], [1, 0]], dtype=int)
 
     # Variables corresponding to columns
-    variables = [1, 2]
 
     # 4. Run Guesser
     guesser = ManthanGuesser()
@@ -62,7 +61,8 @@ def test_manthan_guesser_dependency_logic():
     # 1=0, 2=0, 3=0
     # 1=1, 2=1, 3=1
     samples = np.array([[0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1]])
-    variables = [1, 2, 3]
+
+    # 2 allowed to see 1
 
     # 2 allowed to see 1
     # 3 allowed to see 1, 2

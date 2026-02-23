@@ -35,10 +35,8 @@ class TestVerilogSkolem:
         assert "module SkolemFormula" in content
         assert "input 1, 2;" in content
         assert "output 3;" in content
-        # Check for wire definition and assignment
-        assert "wire w_" in content
-        assert "assign w_" in content
-        assert "assign 3 = w_" in content
+        # Check for assignment directly to output if not shared
+        assert "assign 3 = 1 & 2;" in content
 
     def test_dag_reuse(self, manager, tmp_path):
         # 4 Inputs, 2 Outputs
@@ -69,12 +67,8 @@ class TestVerilogSkolem:
 
         content = output_path.read_text()
 
-        # Expect 3 wires:
-        # w_mid = i1 | i2
-        # w_5 = w_mid & i3
-        # w_6 = w_mid & i4
-
-        assert content.count("wire w_") == 3
+        # Expect only 1 wire for the shared 'mid' node
+        assert content.count("wire w_") == 1
         # Logic for mid should appear once (one OR operation)
         assert content.count("|") == 1
 
@@ -174,11 +168,11 @@ class TestVerilogSkolem:
 
         content = output_path.read_text()
 
-        # Verify significant size
-        assert content.count("wire w_") >= 50
+        # Verify significant size of the flattened expression
+        assert len(content) > 1000
 
-        # Check output assignment uses a wire
-        assert f"assign {output_var} = w_" in content
+        # Check output assignment uses direct values (since no sharing)
+        assert f"assign {output_var} =" in content
 
         # Verify line lengths
         lines = content.splitlines()

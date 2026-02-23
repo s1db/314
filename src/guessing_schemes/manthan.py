@@ -40,12 +40,11 @@ class ManthanGuesser(BaseCandidateFunctionGuesser):
         )
 
         # Map variable ID to column index in samples
-        var_to_col = {
-            var: i
-            for i, var in enumerate(
-                instance.get_existential_vars() + instance.get_universal_vars()
-            )
-        }
+        # Use sorted order to match solver's all_vars
+        all_vars = sorted(
+            instance.get_existential_vars() + instance.get_universal_vars()
+        )
+        var_to_col = {var: i for i, var in enumerate(all_vars)}
 
         # Use samples directly (it's already a boolean matrix)
         # We assume samples columns correspond to 'variables' list order.
@@ -90,8 +89,8 @@ class ManthanGuesser(BaseCandidateFunctionGuesser):
                 clf.fit(X, y)
 
                 # 3. Extract Function & Dependencies
-                candidate_func, used_vars = self._extract_paths_and_deps(
-                    clf.tree_, clf.classes_, feature_map, function_manager
+                candidate_func, used_vars = self._tree_to_candidate(
+                    0, clf.tree_, clf.classes_, feature_map, function_manager
                 )
 
                 candidates[target_y] = candidate_func
@@ -106,67 +105,47 @@ class ManthanGuesser(BaseCandidateFunctionGuesser):
 
         return candidates
 
-    def _extract_paths_and_deps(
-        self, tree, classes, feature_map: List[int], manager: FunctionManager
+    def _tree_to_candidate(
+        self,
+        node_id: int,
+        tree,
+        classes,
+        feature_map: List[int],
+        manager: FunctionManager,
     ) -> Tuple[CandidateFunction, Set[int]]:
         """
-        Extracts paths to leaf nodes with class 1.
-        Returns the CandidateFunction and the Set of variables used in the function.
+        Recursively converts the sklearn decision tree structure to a CandidateFunction
+        using ITE nodes. Returns (CandidateFunction, Set of used variable IDs).
         """
         children_left = tree.children_left
         children_right = tree.children_right
         feature = tree.feature
         value = tree.value
 
-        positive_paths: List[CandidateFunction] = []
-        used_variables: Set[int] = set()
+        if children_left[node_id] == children_right[node_id]:
+            # Leaf node
+            counts = value[node_id][0]
+            if len(classes) == 1:
+                is_class_1 = bool(classes[0])
+            else:
+                is_class_1 = counts[1] > counts[0]
 
-        def dfs(
-            node_id: int,
-            current_path_literals: List[CandidateFunction],
-            current_path_vars: Set[int],
-        ):
-            if children_left[node_id] == children_right[node_id]:
-                # Leaf node
-                counts = value[node_id][0]
-                is_class_1 = False
-                if len(classes) == 1:
-                    if classes[0]:
-                        is_class_1 = True
-                else:
-                    if counts[1] > counts[0]:
-                        is_class_1 = True
+            return (manager.get_true() if is_class_1 else manager.get_false()), set()
 
-                if is_class_1:
-                    path_node = (
-                        manager.get_and(current_path_literals)
-                        if current_path_literals
-                        else manager.get_and([])
-                    )
-                    positive_paths.append(path_node)
-                    used_variables.update(current_path_vars)
-                return
+        # Split node
+        feature_idx = feature[node_id]
+        var_id = feature_map[feature_idx]
 
-            # Split node
-            feature_idx = feature[node_id]
-            var_id = feature_map[feature_idx]
+        cond = manager.get_lit(abs(var_id))
 
-            # Left (0) -> NOT var
-            lit_neg = manager.get_lit(-abs(var_id))
-            dfs(
-                children_left[node_id],
-                current_path_literals + [lit_neg],
-                current_path_vars | {abs(var_id)},
-            )
+        # Right (1) is True branch, Left (0) is False branch (feature <= 0.5)
+        true_branch, true_vars = self._tree_to_candidate(
+            children_right[node_id], tree, classes, feature_map, manager
+        )
+        false_branch, false_vars = self._tree_to_candidate(
+            children_left[node_id], tree, classes, feature_map, manager
+        )
 
-            # Right (1) -> var
-            lit_pos = manager.get_lit(abs(var_id))
-            dfs(
-                children_right[node_id],
-                current_path_literals + [lit_pos],
-                current_path_vars | {abs(var_id)},
-            )
-
-        dfs(0, [], set())
-
-        return manager.get_or(positive_paths), used_variables
+        node = manager.get_ite(cond, true_branch, false_branch)
+        used_vars = {abs(var_id)} | true_vars | false_vars
+        return node, used_vars

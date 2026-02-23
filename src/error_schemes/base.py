@@ -39,6 +39,24 @@ class ErrorFormula(ABC):
 
         # 2. Generate Candidate Module (SKOLEM)
         # Defines Y' <-> Psi(X)
+        self._verilog_memo: Dict[CandidateFunction, str] = {}
+        self._verilog_defs: List[str] = []
+        self._wire_counter: int = 0
+
+        # Optimization: Pass 1 - Count node occurrences to identify shared sub-expressions
+        self._node_counts: Dict[CandidateFunction, int] = {}
+
+        def count_nodes(func: CandidateFunction):
+            if func in self._node_counts:
+                self._node_counts[func] += 1
+                return
+            self._node_counts[func] = 1
+            for child in func.children:
+                count_nodes(child)
+
+        for cand in candidates.values():
+            count_nodes(cand)
+
         y_vars_set = set(y_vars)
         conv_candidates = {
             y: self._candidate_to_verilog(candidates[y], y_vars_set)
@@ -47,7 +65,7 @@ class ErrorFormula(ABC):
         }
         # Ensure all y_vars are present, default to 0 if not
         skolem_verilog = VerilogGenerator.functions_to_verilog(
-            conv_candidates, "SKOLEM", x_vars, y_vars
+            conv_candidates, "SKOLEM", x_vars, y_vars, extra_defs=self._verilog_defs
         )
 
         # 3. Generate MAIN Module
@@ -142,39 +160,68 @@ class ErrorFormula(ABC):
 
     def _candidate_to_verilog(self, func: CandidateFunction, y_vars_set: set) -> str:
         """
-        Recursively converts a CandidateFunction to a Verilog expression string.
-        y_vars_set: Set of integer IDs for Y variables.
+        Pass 2: Converts a CandidateFunction to a Verilog expression string.
+        Shared nodes (occurrence > 1) are assigned to wires.
         """
+        # Initialization check for direct calls (not through generate_verification_file)
+        if not hasattr(self, "_verilog_memo"):
+            self._verilog_memo = {}
+        if not hasattr(self, "_verilog_defs"):
+            self._verilog_defs = []
+        if not hasattr(self, "_wire_counter"):
+            self._wire_counter = 0
+        if not hasattr(self, "_node_counts"):
+            self._node_counts = {}
+
+        # Check memoization
+        if func in self._verilog_memo:
+            return self._verilog_memo[func]
+
         if func.node_type == NodeType.LITERAL:
             assert func.value is not None
             val = abs(func.value)
             prefix = "ip" if val in y_vars_set else "v"
-            return f"{prefix}{val}" if func.value > 0 else f"~{prefix}{val}"
+            res = f"{prefix}{val}" if func.value > 0 else f"~{prefix}{val}"
+            # Literals don't need their own wires, return directly
+            return res
 
-        elif func.node_type == NodeType.AND:
+        if func.node_type == NodeType.CONSTANT:
+            return "1'b1" if func.value == 1 else "1'b0"
+
+        # Structural generation
+        if func.node_type == NodeType.AND:
             if not func.children:
-                return "1"  # Empty AND is True
-            children_str = [
-                self._candidate_to_verilog(c, y_vars_set) for c in func.children
-            ]
-            return f"({' & '.join(children_str)})"
+                expr = "1'b1"
+            else:
+                children_str = [
+                    self._candidate_to_verilog(c, y_vars_set) for c in func.children
+                ]
+                expr = f"({' & '.join(children_str)})"
 
         elif func.node_type == NodeType.OR:
             if not func.children:
-                return "0"  # Empty OR is False
-            children_str = [
-                self._candidate_to_verilog(c, y_vars_set) for c in func.children
-            ]
-            return f"({' | '.join(children_str)})"
+                expr = "1'b0"
+            else:
+                children_str = [
+                    self._candidate_to_verilog(c, y_vars_set) for c in func.children
+                ]
+                expr = f"({' | '.join(children_str)})"
 
         elif func.node_type == NodeType.ITE:
-            # ITE(c, t, e) = (c & t) | (~c & e)
             c = self._candidate_to_verilog(func.children[0], y_vars_set)
             t = self._candidate_to_verilog(func.children[1], y_vars_set)
             e = self._candidate_to_verilog(func.children[2], y_vars_set)
-            return f"( ({c} & {t}) | (~{c} & {e}) )"
+            expr = f"({c} ? {t} : {e})"
+        else:
+            expr = "1'b0"
 
-        elif func.node_type == NodeType.CONSTANT:
-            return "1" if func.value == 1 else "0"
+        # Emit wire ONLY if shared (occurrence > 1)
+        if self._node_counts.get(func, 0) > 1:
+            self._wire_counter += 1
+            wire_name = f"ga_{self._wire_counter}"
+            self._verilog_defs.append(f"wire {wire_name};")
+            self._verilog_defs.append(f"assign {wire_name} = {expr};")
+            self._verilog_memo[func] = wire_name
+            return wire_name
 
-        return "0"
+        return expr

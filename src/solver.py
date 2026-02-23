@@ -49,9 +49,9 @@ class Solver:
         )
 
         # Identify variable types
-        self.x_vars: List[int] = self.instance.get_universal_vars()
-        self.y_vars: List[int] = self.instance.get_existential_vars()
-        all_vars = self.x_vars + self.y_vars
+        self.x_vars: List[int] = sorted(self.instance.get_universal_vars())
+        self.y_vars: List[int] = sorted(self.instance.get_existential_vars())
+        all_vars = sorted(self.x_vars + self.y_vars)
 
         # 2. Initialize Components
         # The dependency scheme is now initialized within the Instance
@@ -71,6 +71,14 @@ class Solver:
         self.candidates: Dict[int, CandidateFunction] = {}
 
     def solve(self):
+        # Phase 1: Sampling
+        self.logger.info(f"Generating {self.num_samples} samples...")
+        samples = self.sampler.sample(self.num_samples)
+        if len(samples) == 0:
+            self.logger.warning("No samples generated (Matrix UNSAT).")
+            print("s False")
+            exit(0)
+
         # Phase 0: Preprocessing
         if self.preprocessors:
             self.logger.info("Running %d preprocessor(s)...", len(self.preprocessors))
@@ -81,20 +89,13 @@ class Solver:
                     self.y_vars,
                     self.candidates,
                     self.function_manager,
+                    samples=samples,
                 )
             resolved = [v for v, f in self.candidates.items() if not f.repairable]
             if resolved:
                 self.logger.info(
                     "Preprocessing resolved %d variables: %s", len(resolved), resolved
                 )
-
-        # Phase 1: Sampling
-        self.logger.info(f"Generating {self.num_samples} samples...")
-        samples = self.sampler.sample(self.num_samples)
-        if len(samples) == 0:
-            self.logger.warning("No samples generated (Matrix UNSAT).")
-            print("s False")
-            exit(0)
 
         self.logger.info("Learning initial candidates...")
 
@@ -130,7 +131,9 @@ class Solver:
 
             # 2. Fault Localization
             self.logger.info("Localizing faults...")
-            suspects = self.fl_scheme.localize(self.candidates, assignment)
+            suspects = self.fl_scheme.localize(
+                self.candidates, assignment, self.dep_scheme
+            )
 
             # Filter out non-repairable candidates (resolved by preprocessing)
             suspects = [
