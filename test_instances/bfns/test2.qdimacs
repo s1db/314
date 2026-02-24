@@ -1,0 +1,7 @@
+c Simple QDIMACS: y1 <=> (x1 AND x2)
+p cnf 3 3
+a 1 2 0
+e 3 0
+-3 1 0
+-3 2 0
+3 -1 -2 0

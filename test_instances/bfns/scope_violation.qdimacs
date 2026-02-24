@@ -1,0 +1,12 @@
+c Scope Violation Test
+c Formula: Forall x1 Exists y1 Forall x2 . (y1 <-> x2)
+c Expected: UNSAT (because y1 cannot depend on x2)
+c If Logic Leaks Future: SAT (y1 simply copies x2)
+p cnf 3 4
+a 1 0
+e 2 0
+a 3 0
+-2 3 0
+2 -3 0
+1 -1 0
+3 -3 0
