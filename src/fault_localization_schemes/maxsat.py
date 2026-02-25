@@ -48,11 +48,9 @@ class MaxSATScheme(FaultLocalizationScheme):
 
             lit = var if current_val else -var
             if not func.repairable:
-                # Non-repairable variables are FIXED as hard constraints
-                wcnf.append([lit])
-            else:
-                # Repairable variables are soft constraints (minimize flips)
-                wcnf.append([lit], weight=1)
+                continue
+            # Repairable variables are soft constraints (minimize flips)
+            wcnf.append([lit], weight=1)
 
         # 4. Solve MaxSAT
         with RC2(wcnf) as rc2:

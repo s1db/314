@@ -176,17 +176,83 @@ class CandidateFunction:
 
         return self
 
-    def to_cnf(self, manager: "FunctionManager") -> List[List[int]]:
+    def to_cnf(self, output_var: int, aux_start: int) -> Tuple[List[List[int]], int]:
+        """Tseitin-encode ``output_var ↔ self`` into CNF clauses.
+
+        Returns ``(clauses, next_aux)`` where *next_aux* is the first
+        unused auxiliary variable index.
+
+        Parameters
+        ----------
+        output_var:
+            The DIMACS variable that this function defines (i.e., the
+            existential variable whose Skolem function this represents).
+        aux_start:
+            The first auxiliary variable index available for Tseitin
+            gate variables.
         """
-        Converts to CNF (list of clauses) using Tseitin transformation if necessary?
-        Actually, for simple NNF validation or solving, we might just want to use a solver wrapper
-        that handles the DAG. But if explicit CNF is needed:
-        """
-        # Placeholder for full Tseitin implementation.
-        # For now, we assume this feature is mainly for interfacing with SAT solvers
-        # which usually handle this via API (add_clause).
-        # Implementing a full Tseitin transformer returning raw integers requires a fresh variable generator.
-        raise NotImplementedError("Full CNF export requires a variable manager.")
+        clauses: List[List[int]] = []
+        memo: Dict[int, int] = {}  # CandidateFunction id → variable
+        counter = aux_start
+
+        def _encode(node: "CandidateFunction") -> int:
+            nonlocal counter
+            node_id = id(node)
+            if node_id in memo:
+                return memo[node_id]
+
+            if node.node_type == NodeType.CONSTANT:
+                g = counter
+                counter += 1
+                clauses.append([g] if node.value == 1 else [-g])
+                memo[node_id] = g
+                return g
+
+            if node.node_type == NodeType.LITERAL:
+                assert node.value is not None
+                memo[node_id] = node.value
+                return node.value
+
+            # Allocate a gate variable for composite nodes
+            g = counter
+            counter += 1
+            memo[node_id] = g
+
+            if node.node_type == NodeType.AND:
+                child_lits = [_encode(c) for c in node.children]
+                # g ↔ AND(c1, c2, ...)
+                for ci in child_lits:
+                    clauses.append([-g, ci])
+                clauses.append([-ci for ci in child_lits] + [g])
+
+            elif node.node_type == NodeType.OR:
+                child_lits = [_encode(c) for c in node.children]
+                # g ↔ OR(c1, c2, ...)
+                clauses.append([-g] + child_lits)
+                for ci in child_lits:
+                    clauses.append([-ci, g])
+
+            elif node.node_type == NodeType.ITE:
+                s = _encode(node.children[0])
+                t = _encode(node.children[1])
+                e = _encode(node.children[2])
+                # g ↔ ITE(s, t, e) = (s ∧ t) ∨ (¬s ∧ e)
+                clauses.append([-g, -s, t])
+                clauses.append([-g, s, e])
+                clauses.append([g, -s, -t])
+                clauses.append([g, s, -e])
+
+            return g
+
+        root = _encode(self)
+        # Assert output_var ↔ root
+        if isinstance(root, int) and abs(root) == output_var:
+            pass  # Already the same variable
+        else:
+            clauses.append([-output_var, root])
+            clauses.append([output_var, -root])
+
+        return clauses, counter
 
     def __repr__(self) -> str:
         if self.node_type == NodeType.CONSTANT:

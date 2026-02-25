@@ -10,9 +10,7 @@
             ]
         ],
         "depends": [
-            "/Users/sid/Documents/godel1/src/bindings/abc_lib/src/base/abc/abc.h",
-            "/Users/sid/Documents/godel1/src/bindings/abc_lib/src/base/cmd/cmd.h",
-            "/Users/sid/Documents/godel1/src/bindings/abc_lib/src/base/main/main.h"
+            "src/bindings/abc_wrapper_headers.h"
         ],
         "extra_compile_args": [
             "-fPIC",
@@ -21,18 +19,20 @@
             "-Wno-unused-result",
             "-Wno-narrowing"
         ],
+        "extra_objects": [
+            "/home/sbhavnani/314/src/bindings/abc_lib/libabc.a"
+        ],
         "include_dirs": [
-            "/Users/sid/Documents/godel1/src/bindings/abc_lib/src"
+            "src/bindings",
+            "/home/sbhavnani/314/src/bindings/abc_lib/src"
         ],
         "language": "c++",
         "libraries": [
-            "abc",
+            "readline",
+            "ncurses",
             "m",
             "dl",
             "pthread"
-        ],
-        "library_dirs": [
-            "/Users/sid/Documents/godel1/src/bindings/abc_lib"
         ],
         "name": "src.bindings.abc_wrapper",
         "sources": [
@@ -1174,9 +1174,7 @@ static int __Pyx_init_co_variables(void) {
 /* Early includes */
 #include <string.h>
 #include <stdlib.h>
-#include "base/main/main.h"
-#include "base/cmd/cmd.h"
-#include "base/abc/abc.h"
+#include "abc_wrapper_headers.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif /* _OPENMP */
@@ -1573,7 +1571,7 @@ static const char* const __pyx_f[] = {
 /*--- Type declarations ---*/
 struct __pyx_obj_3src_8bindings_11abc_wrapper_AbcInterface;
 
-/* "src/bindings/abc_wrapper.pyx":34
+/* "src/bindings/abc_wrapper.pyx":36
  * 
  * # wrapper class
  * cdef class AbcInterface:             # <<<<<<<<<<<<<<
@@ -2654,7 +2652,7 @@ return 0;
 #endif
 /* #### Code section: module_code ### */
 
-/* "src/bindings/abc_wrapper.pyx":37
+/* "src/bindings/abc_wrapper.pyx":39
  *     cdef Abc_Frame_t * _frame
  * 
  *     def __cinit__(self):             # <<<<<<<<<<<<<<
@@ -2690,7 +2688,7 @@ static int __pyx_pw_3src_8bindings_11abc_wrapper_12AbcInterface_1__cinit__(PyObj
 static int __pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface___cinit__(struct __pyx_obj_3src_8bindings_11abc_wrapper_AbcInterface *__pyx_v_self) {
   int __pyx_r;
 
-  /* "src/bindings/abc_wrapper.pyx":38
+  /* "src/bindings/abc_wrapper.pyx":40
  * 
  *     def __cinit__(self):
  *         Abc_Start()             # <<<<<<<<<<<<<<
@@ -2699,7 +2697,7 @@ static int __pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface___cinit__(struct
 */
   Abc_Start();
 
-  /* "src/bindings/abc_wrapper.pyx":39
+  /* "src/bindings/abc_wrapper.pyx":41
  *     def __cinit__(self):
  *         Abc_Start()
  *         self._frame = Abc_FrameGetGlobalFrame()             # <<<<<<<<<<<<<<
@@ -2708,7 +2706,7 @@ static int __pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface___cinit__(struct
 */
   __pyx_v_self->_frame = Abc_FrameGetGlobalFrame();
 
-  /* "src/bindings/abc_wrapper.pyx":37
+  /* "src/bindings/abc_wrapper.pyx":39
  *     cdef Abc_Frame_t * _frame
  * 
  *     def __cinit__(self):             # <<<<<<<<<<<<<<
@@ -2721,7 +2719,7 @@ static int __pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface___cinit__(struct
   return __pyx_r;
 }
 
-/* "src/bindings/abc_wrapper.pyx":41
+/* "src/bindings/abc_wrapper.pyx":43
  *         self._frame = Abc_FrameGetGlobalFrame()
  * 
  *     def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -2744,7 +2742,7 @@ static void __pyx_pw_3src_8bindings_11abc_wrapper_12AbcInterface_3__dealloc__(Py
 
 static void __pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_2__dealloc__(CYTHON_UNUSED struct __pyx_obj_3src_8bindings_11abc_wrapper_AbcInterface *__pyx_v_self) {
 
-  /* "src/bindings/abc_wrapper.pyx":42
+  /* "src/bindings/abc_wrapper.pyx":44
  * 
  *     def __dealloc__(self):
  *         Abc_Stop()             # <<<<<<<<<<<<<<
@@ -2753,7 +2751,7 @@ static void __pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_2__dealloc__(CY
 */
   Abc_Stop();
 
-  /* "src/bindings/abc_wrapper.pyx":41
+  /* "src/bindings/abc_wrapper.pyx":43
  *         self._frame = Abc_FrameGetGlobalFrame()
  * 
  *     def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -2764,7 +2762,7 @@ static void __pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_2__dealloc__(CY
   /* function exit code */
 }
 
-/* "src/bindings/abc_wrapper.pyx":44
+/* "src/bindings/abc_wrapper.pyx":46
  *         Abc_Stop()
  * 
  *     def run_command(self, str command):             # <<<<<<<<<<<<<<
@@ -2812,32 +2810,32 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   {
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_command,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len) < 0) __PYX_ERR(0, 44, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len) < 0) __PYX_ERR(0, 46, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 44, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 46, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "run_command", 0) < (0)) __PYX_ERR(0, 44, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "run_command", 0) < (0)) __PYX_ERR(0, 46, __pyx_L3_error)
       for (Py_ssize_t i = __pyx_nargs; i < 1; i++) {
-        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("run_command", 1, 1, 1, i); __PYX_ERR(0, 44, __pyx_L3_error) }
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("run_command", 1, 1, 1, i); __PYX_ERR(0, 46, __pyx_L3_error) }
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 44, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 46, __pyx_L3_error)
     }
     __pyx_v_command = ((PyObject*)values[0]);
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("run_command", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 44, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("run_command", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 46, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -2848,7 +2846,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_command), (&PyUnicode_Type), 1, "command", 1))) __PYX_ERR(0, 44, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_command), (&PyUnicode_Type), 1, "command", 1))) __PYX_ERR(0, 46, __pyx_L1_error)
   __pyx_r = __pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_4run_command(((struct __pyx_obj_3src_8bindings_11abc_wrapper_AbcInterface *)__pyx_v_self), __pyx_v_command);
 
   /* function exit code */
@@ -2879,7 +2877,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_4run_comma
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("run_command", 0);
 
-  /* "src/bindings/abc_wrapper.pyx":46
+  /* "src/bindings/abc_wrapper.pyx":48
  *     def run_command(self, str command):
  *         """Runs an ABC command. Returns the status code (0 = success)."""
  *         cmd_bytes = command.encode('utf-8')             # <<<<<<<<<<<<<<
@@ -2888,14 +2886,14 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_4run_comma
 */
   if (unlikely(__pyx_v_command == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%.30s'", "encode");
-    __PYX_ERR(0, 46, __pyx_L1_error)
+    __PYX_ERR(0, 48, __pyx_L1_error)
   }
-  __pyx_t_1 = PyUnicode_AsUTF8String(__pyx_v_command); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 46, __pyx_L1_error)
+  __pyx_t_1 = PyUnicode_AsUTF8String(__pyx_v_command); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 48, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_cmd_bytes = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "src/bindings/abc_wrapper.pyx":47
+  /* "src/bindings/abc_wrapper.pyx":49
  *         """Runs an ABC command. Returns the status code (0 = success)."""
  *         cmd_bytes = command.encode('utf-8')
  *         return Cmd_CommandExecute(self._frame, cmd_bytes)             # <<<<<<<<<<<<<<
@@ -2903,14 +2901,14 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_4run_comma
  *     def check_sat(self, str verilog_file):
 */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2 = __Pyx_PyBytes_AsString(__pyx_v_cmd_bytes); if (unlikely((!__pyx_t_2) && PyErr_Occurred())) __PYX_ERR(0, 47, __pyx_L1_error)
-  __pyx_t_1 = __Pyx_PyLong_From_int(Cmd_CommandExecute(__pyx_v_self->_frame, __pyx_t_2)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyBytes_AsString(__pyx_v_cmd_bytes); if (unlikely((!__pyx_t_2) && PyErr_Occurred())) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyLong_From_int(Cmd_CommandExecute(__pyx_v_self->_frame, __pyx_t_2)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 49, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "src/bindings/abc_wrapper.pyx":44
+  /* "src/bindings/abc_wrapper.pyx":46
  *         Abc_Stop()
  * 
  *     def run_command(self, str command):             # <<<<<<<<<<<<<<
@@ -2930,7 +2928,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_4run_comma
   return __pyx_r;
 }
 
-/* "src/bindings/abc_wrapper.pyx":49
+/* "src/bindings/abc_wrapper.pyx":51
  *         return Cmd_CommandExecute(self._frame, cmd_bytes)
  * 
  *     def check_sat(self, str verilog_file):             # <<<<<<<<<<<<<<
@@ -2978,32 +2976,32 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   {
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_verilog_file,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len) < 0) __PYX_ERR(0, 49, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len) < 0) __PYX_ERR(0, 51, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 49, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 51, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "check_sat", 0) < (0)) __PYX_ERR(0, 49, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "check_sat", 0) < (0)) __PYX_ERR(0, 51, __pyx_L3_error)
       for (Py_ssize_t i = __pyx_nargs; i < 1; i++) {
-        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("check_sat", 1, 1, 1, i); __PYX_ERR(0, 49, __pyx_L3_error) }
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("check_sat", 1, 1, 1, i); __PYX_ERR(0, 51, __pyx_L3_error) }
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 49, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 51, __pyx_L3_error)
     }
     __pyx_v_verilog_file = ((PyObject*)values[0]);
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("check_sat", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 49, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("check_sat", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 51, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -3014,7 +3012,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_verilog_file), (&PyUnicode_Type), 1, "verilog_file", 1))) __PYX_ERR(0, 49, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_verilog_file), (&PyUnicode_Type), 1, "verilog_file", 1))) __PYX_ERR(0, 51, __pyx_L1_error)
   __pyx_r = __pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat(((struct __pyx_obj_3src_8bindings_11abc_wrapper_AbcInterface *)__pyx_v_self), __pyx_v_verilog_file);
 
   /* function exit code */
@@ -3067,7 +3065,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("check_sat", 0);
 
-  /* "src/bindings/abc_wrapper.pyx":57
+  /* "src/bindings/abc_wrapper.pyx":59
  *             None if Undecided (or error?).
  *         """
  *         logger = logging.getLogger(__name__)             # <<<<<<<<<<<<<<
@@ -3075,12 +3073,12 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
  * 
 */
   __pyx_t_2 = NULL;
-  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_logging); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 57, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_logging); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 59, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_getLogger); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 57, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_getLogger); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 59, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_name); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 57, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_name); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 59, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_5 = 1;
   #if CYTHON_UNPACK_METHODS
@@ -3100,13 +3098,13 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 57, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 59, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
   }
   __pyx_v_logger = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "src/bindings/abc_wrapper.pyx":58
+  /* "src/bindings/abc_wrapper.pyx":60
  *         """
  *         logger = logging.getLogger(__name__)
  *         start_time = time.time()             # <<<<<<<<<<<<<<
@@ -3114,9 +3112,9 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
  *         # Suppress ABC Output
 */
   __pyx_t_4 = NULL;
-  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_time); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 58, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_time); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 60, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_time); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 58, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_mstate_global->__pyx_n_u_time); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 60, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_t_5 = 1;
@@ -3136,13 +3134,13 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
     __pyx_t_1 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_2, __pyx_callargs+__pyx_t_5, (1-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 58, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 60, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
   }
   __pyx_v_start_time = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "src/bindings/abc_wrapper.pyx":61
+  /* "src/bindings/abc_wrapper.pyx":63
  * 
  *         # Suppress ABC Output
  *         with suppress_stdout_stderr():             # <<<<<<<<<<<<<<
@@ -3151,7 +3149,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
 */
   /*with:*/ {
     __pyx_t_2 = NULL;
-    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_suppress_stdout_stderr); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 61, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_suppress_stdout_stderr); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 63, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __pyx_t_5 = 1;
     #if CYTHON_UNPACK_METHODS
@@ -3170,13 +3168,13 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
       __pyx_t_1 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_4, __pyx_callargs+__pyx_t_5, (1-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 61, __pyx_L1_error)
+      if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 63, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
     }
-    __pyx_t_6 = __Pyx_PyObject_LookupSpecial(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_exit); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 61, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_LookupSpecial(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_exit); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 63, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __pyx_t_2 = NULL;
-    __pyx_t_3 = __Pyx_PyObject_LookupSpecial(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_enter); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 61, __pyx_L3_error)
+    __pyx_t_3 = __Pyx_PyObject_LookupSpecial(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_enter); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 63, __pyx_L3_error)
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_t_5 = 1;
     #if CYTHON_UNPACK_METHODS
@@ -3195,7 +3193,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
       __pyx_t_4 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_3, __pyx_callargs+__pyx_t_5, (1-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 61, __pyx_L3_error)
+      if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 63, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_4);
     }
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -3210,7 +3208,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
         __Pyx_XGOTREF(__pyx_t_9);
         /*try:*/ {
 
-          /* "src/bindings/abc_wrapper.pyx":64
+          /* "src/bindings/abc_wrapper.pyx":66
  *             # 1. Read
  *             # strict verilog reader in ABC
  *             self.run_command(f"read_verilog {verilog_file}")             # <<<<<<<<<<<<<<
@@ -3219,9 +3217,9 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
 */
           __pyx_t_4 = ((PyObject *)__pyx_v_self);
           __Pyx_INCREF(__pyx_t_4);
-          __pyx_t_3 = __Pyx_PyUnicode_Unicode(__pyx_v_verilog_file); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 64, __pyx_L7_error)
+          __pyx_t_3 = __Pyx_PyUnicode_Unicode(__pyx_v_verilog_file); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 66, __pyx_L7_error)
           __Pyx_GOTREF(__pyx_t_3);
-          __pyx_t_2 = __Pyx_PyUnicode_Concat(__pyx_mstate_global->__pyx_kp_u_read_verilog, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 64, __pyx_L7_error)
+          __pyx_t_2 = __Pyx_PyUnicode_Concat(__pyx_mstate_global->__pyx_kp_u_read_verilog, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L7_error)
           __Pyx_GOTREF(__pyx_t_2);
           __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
           __pyx_t_5 = 0;
@@ -3230,12 +3228,12 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
             __pyx_t_1 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_run_command, __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
             __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
             __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-            if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 64, __pyx_L7_error)
+            if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 66, __pyx_L7_error)
             __Pyx_GOTREF(__pyx_t_1);
           }
           __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-          /* "src/bindings/abc_wrapper.pyx":68
+          /* "src/bindings/abc_wrapper.pyx":70
  *             # 2. Convert to AIG (blast) for solving
  *             # strash is standard
  *             self.run_command("strash")             # <<<<<<<<<<<<<<
@@ -3249,12 +3247,12 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
             PyObject *__pyx_callargs[2] = {__pyx_t_2, __pyx_mstate_global->__pyx_n_u_strash};
             __pyx_t_1 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_run_command, __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
             __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-            if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 68, __pyx_L7_error)
+            if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 70, __pyx_L7_error)
             __Pyx_GOTREF(__pyx_t_1);
           }
           __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-          /* "src/bindings/abc_wrapper.pyx":83
+          /* "src/bindings/abc_wrapper.pyx":85
  *             # If result is SAT (property fails), E is SAT -> Bug.
  * 
  *             self.run_command("iprove")             # <<<<<<<<<<<<<<
@@ -3268,12 +3266,12 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
             PyObject *__pyx_callargs[2] = {__pyx_t_2, __pyx_mstate_global->__pyx_n_u_iprove};
             __pyx_t_1 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_run_command, __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
             __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-            if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 83, __pyx_L7_error)
+            if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 85, __pyx_L7_error)
             __Pyx_GOTREF(__pyx_t_1);
           }
           __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-          /* "src/bindings/abc_wrapper.pyx":87
+          /* "src/bindings/abc_wrapper.pyx":89
  *             # 4. Check status
  *             # 1=UNSAT (Property holds), 0=SAT (Property fails), -1=UNDEC
  *             status = Abc_FrameReadProbStatus(self._frame)             # <<<<<<<<<<<<<<
@@ -3282,7 +3280,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
 */
           __pyx_v_status = Abc_FrameReadProbStatus(__pyx_v_self->_frame);
 
-          /* "src/bindings/abc_wrapper.pyx":61
+          /* "src/bindings/abc_wrapper.pyx":63
  * 
  *         # Suppress ABC Output
  *         with suppress_stdout_stderr():             # <<<<<<<<<<<<<<
@@ -3301,20 +3299,20 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
         __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
         /*except:*/ {
           __Pyx_AddTraceback("src.bindings.abc_wrapper.AbcInterface.check_sat", __pyx_clineno, __pyx_lineno, __pyx_filename);
-          if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_2, &__pyx_t_4) < 0) __PYX_ERR(0, 61, __pyx_L9_except_error)
+          if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_2, &__pyx_t_4) < 0) __PYX_ERR(0, 63, __pyx_L9_except_error)
           __Pyx_XGOTREF(__pyx_t_1);
           __Pyx_XGOTREF(__pyx_t_2);
           __Pyx_XGOTREF(__pyx_t_4);
-          __pyx_t_3 = PyTuple_Pack(3, __pyx_t_1, __pyx_t_2, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 61, __pyx_L9_except_error)
+          __pyx_t_3 = PyTuple_Pack(3, __pyx_t_1, __pyx_t_2, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 63, __pyx_L9_except_error)
           __Pyx_GOTREF(__pyx_t_3);
           __pyx_t_10 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_3, NULL);
           __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
           __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-          if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 61, __pyx_L9_except_error)
+          if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 63, __pyx_L9_except_error)
           __Pyx_GOTREF(__pyx_t_10);
           __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_10);
           __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-          if (__pyx_t_11 < (0)) __PYX_ERR(0, 61, __pyx_L9_except_error)
+          if (__pyx_t_11 < (0)) __PYX_ERR(0, 63, __pyx_L9_except_error)
           __pyx_t_12 = (!__pyx_t_11);
           if (unlikely(__pyx_t_12)) {
             __Pyx_GIVEREF(__pyx_t_1);
@@ -3322,7 +3320,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
             __Pyx_XGIVEREF(__pyx_t_4);
             __Pyx_ErrRestoreWithState(__pyx_t_1, __pyx_t_2, __pyx_t_4);
             __pyx_t_1 = 0;  __pyx_t_2 = 0;  __pyx_t_4 = 0; 
-            __PYX_ERR(0, 61, __pyx_L9_except_error)
+            __PYX_ERR(0, 63, __pyx_L9_except_error)
           }
           __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
           __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
@@ -3348,7 +3346,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
         if (__pyx_t_6) {
           __pyx_t_9 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_mstate_global->__pyx_tuple[0], NULL);
           __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-          if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 61, __pyx_L1_error)
+          if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 63, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_9);
           __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
         }
@@ -3363,7 +3361,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
     __pyx_L16:;
   }
 
-  /* "src/bindings/abc_wrapper.pyx":89
+  /* "src/bindings/abc_wrapper.pyx":91
  *             status = Abc_FrameReadProbStatus(self._frame)
  * 
  *         cdef Abc_Cex_t * pCex = NULL             # <<<<<<<<<<<<<<
@@ -3372,7 +3370,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
 */
   __pyx_v_pCex = NULL;
 
-  /* "src/bindings/abc_wrapper.pyx":90
+  /* "src/bindings/abc_wrapper.pyx":92
  * 
  *         cdef Abc_Cex_t * pCex = NULL
  *         if status == 0:             # <<<<<<<<<<<<<<
@@ -3382,7 +3380,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
   __pyx_t_12 = (__pyx_v_status == 0);
   if (__pyx_t_12) {
 
-    /* "src/bindings/abc_wrapper.pyx":91
+    /* "src/bindings/abc_wrapper.pyx":93
  *         cdef Abc_Cex_t * pCex = NULL
  *         if status == 0:
  *              pCex = <Abc_Cex_t *>Abc_FrameReadCex(self._frame)             # <<<<<<<<<<<<<<
@@ -3391,7 +3389,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
 */
     __pyx_v_pCex = ((Abc_Cex_t *)Abc_FrameReadCex(__pyx_v_self->_frame));
 
-    /* "src/bindings/abc_wrapper.pyx":90
+    /* "src/bindings/abc_wrapper.pyx":92
  * 
  *         cdef Abc_Cex_t * pCex = NULL
  *         if status == 0:             # <<<<<<<<<<<<<<
@@ -3400,7 +3398,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
 */
   }
 
-  /* "src/bindings/abc_wrapper.pyx":93
+  /* "src/bindings/abc_wrapper.pyx":95
  *              pCex = <Abc_Cex_t *>Abc_FrameReadCex(self._frame)
  * 
  *         end_time = time.time()             # <<<<<<<<<<<<<<
@@ -3408,9 +3406,9 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
  * 
 */
   __pyx_t_2 = NULL;
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_time); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 93, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_time); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 95, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_time); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 93, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_mstate_global->__pyx_n_u_time); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 95, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_5 = 1;
@@ -3430,25 +3428,25 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
     __pyx_t_4 = __Pyx_PyObject_FastCall((PyObject*)__pyx_t_3, __pyx_callargs+__pyx_t_5, (1-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 93, __pyx_L1_error)
+    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 95, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
   }
   __pyx_v_end_time = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "src/bindings/abc_wrapper.pyx":94
+  /* "src/bindings/abc_wrapper.pyx":96
  * 
  *         end_time = time.time()
  *         duration = end_time - start_time             # <<<<<<<<<<<<<<
  * 
  *         if status == 1:
 */
-  __pyx_t_4 = PyNumber_Subtract(__pyx_v_end_time, __pyx_v_start_time); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 94, __pyx_L1_error)
+  __pyx_t_4 = PyNumber_Subtract(__pyx_v_end_time, __pyx_v_start_time); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 96, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_v_duration = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "src/bindings/abc_wrapper.pyx":96
+  /* "src/bindings/abc_wrapper.pyx":98
  *         duration = end_time - start_time
  * 
  *         if status == 1:             # <<<<<<<<<<<<<<
@@ -3458,7 +3456,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
   __pyx_t_12 = (__pyx_v_status == 1);
   if (__pyx_t_12) {
 
-    /* "src/bindings/abc_wrapper.pyx":97
+    /* "src/bindings/abc_wrapper.pyx":99
  * 
  *         if status == 1:
  *             logger.info(f"ABC Check: UNSAT in {duration:.4f}s")             # <<<<<<<<<<<<<<
@@ -3467,13 +3465,13 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
 */
     __pyx_t_3 = __pyx_v_logger;
     __Pyx_INCREF(__pyx_t_3);
-    __pyx_t_2 = __Pyx_PyObject_Format(__pyx_v_duration, __pyx_mstate_global->__pyx_kp_u_4f); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 97, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_Format(__pyx_v_duration, __pyx_mstate_global->__pyx_kp_u_4f); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 99, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __pyx_t_13[0] = __pyx_mstate_global->__pyx_kp_u_ABC_Check_UNSAT_in;
     __pyx_t_13[1] = __pyx_t_2;
     __pyx_t_13[2] = __pyx_mstate_global->__pyx_n_u_s;
     __pyx_t_1 = __Pyx_PyUnicode_Join(__pyx_t_13, 3, 20 + __Pyx_PyUnicode_GET_LENGTH(__pyx_t_2) + 1, 127 | __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_2));
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 97, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 99, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_t_5 = 0;
@@ -3482,12 +3480,12 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
       __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_info, __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
       __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 97, __pyx_L1_error)
+      if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 99, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
     }
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-    /* "src/bindings/abc_wrapper.pyx":98
+    /* "src/bindings/abc_wrapper.pyx":100
  *         if status == 1:
  *             logger.info(f"ABC Check: UNSAT in {duration:.4f}s")
  *             return None # Verified!             # <<<<<<<<<<<<<<
@@ -3498,7 +3496,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
     __pyx_r = Py_None; __Pyx_INCREF(Py_None);
     goto __pyx_L0;
 
-    /* "src/bindings/abc_wrapper.pyx":96
+    /* "src/bindings/abc_wrapper.pyx":98
  *         duration = end_time - start_time
  * 
  *         if status == 1:             # <<<<<<<<<<<<<<
@@ -3507,7 +3505,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
 */
   }
 
-  /* "src/bindings/abc_wrapper.pyx":100
+  /* "src/bindings/abc_wrapper.pyx":102
  *             return None # Verified!
  * 
  *         if status == 0:             # <<<<<<<<<<<<<<
@@ -3517,7 +3515,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
   __pyx_t_12 = (__pyx_v_status == 0);
   if (__pyx_t_12) {
 
-    /* "src/bindings/abc_wrapper.pyx":101
+    /* "src/bindings/abc_wrapper.pyx":103
  * 
  *         if status == 0:
  *             logger.info(f"ABC Check: SAT in {duration:.4f}s")             # <<<<<<<<<<<<<<
@@ -3526,13 +3524,13 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
 */
     __pyx_t_1 = __pyx_v_logger;
     __Pyx_INCREF(__pyx_t_1);
-    __pyx_t_3 = __Pyx_PyObject_Format(__pyx_v_duration, __pyx_mstate_global->__pyx_kp_u_4f); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 101, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_Format(__pyx_v_duration, __pyx_mstate_global->__pyx_kp_u_4f); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 103, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_t_13[0] = __pyx_mstate_global->__pyx_kp_u_ABC_Check_SAT_in;
     __pyx_t_13[1] = __pyx_t_3;
     __pyx_t_13[2] = __pyx_mstate_global->__pyx_n_u_s;
     __pyx_t_2 = __Pyx_PyUnicode_Join(__pyx_t_13, 3, 18 + __Pyx_PyUnicode_GET_LENGTH(__pyx_t_3) + 1, 127 | __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_3));
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 101, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 103, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_t_5 = 0;
@@ -3541,12 +3539,12 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
       __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_info, __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
       __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 101, __pyx_L1_error)
+      if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 103, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
     }
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-    /* "src/bindings/abc_wrapper.pyx":105
+    /* "src/bindings/abc_wrapper.pyx":107
  *             # pCex was retrieved inside suppression block if status==0, but capturing pointer is fine?
  *             # Actually CEX structure is in memory.
  *             if pCex == NULL:             # <<<<<<<<<<<<<<
@@ -3556,7 +3554,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
     __pyx_t_12 = (__pyx_v_pCex == NULL);
     if (__pyx_t_12) {
 
-      /* "src/bindings/abc_wrapper.pyx":108
+      /* "src/bindings/abc_wrapper.pyx":110
  *                 # Try to get CEX again if it wasn't captured?
  *                 # Abc_FrameReadCex just returns the pointer stored in frame.
  *                 pCex = <Abc_Cex_t *>Abc_FrameReadCex(self._frame)             # <<<<<<<<<<<<<<
@@ -3565,7 +3563,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
 */
       __pyx_v_pCex = ((Abc_Cex_t *)Abc_FrameReadCex(__pyx_v_self->_frame));
 
-      /* "src/bindings/abc_wrapper.pyx":109
+      /* "src/bindings/abc_wrapper.pyx":111
  *                 # Abc_FrameReadCex just returns the pointer stored in frame.
  *                 pCex = <Abc_Cex_t *>Abc_FrameReadCex(self._frame)
  *                 if pCex == NULL:             # <<<<<<<<<<<<<<
@@ -3575,7 +3573,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
       __pyx_t_12 = (__pyx_v_pCex == NULL);
       if (__pyx_t_12) {
 
-        /* "src/bindings/abc_wrapper.pyx":110
+        /* "src/bindings/abc_wrapper.pyx":112
  *                 pCex = <Abc_Cex_t *>Abc_FrameReadCex(self._frame)
  *                 if pCex == NULL:
  *                      return [] # Should not happen if SAT             # <<<<<<<<<<<<<<
@@ -3583,13 +3581,13 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
  *             # Convert CEX to list of bits
 */
         __Pyx_XDECREF(__pyx_r);
-        __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 110, __pyx_L1_error)
+        __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 112, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         __pyx_r = __pyx_t_4;
         __pyx_t_4 = 0;
         goto __pyx_L0;
 
-        /* "src/bindings/abc_wrapper.pyx":109
+        /* "src/bindings/abc_wrapper.pyx":111
  *                 # Abc_FrameReadCex just returns the pointer stored in frame.
  *                 pCex = <Abc_Cex_t *>Abc_FrameReadCex(self._frame)
  *                 if pCex == NULL:             # <<<<<<<<<<<<<<
@@ -3598,7 +3596,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
 */
       }
 
-      /* "src/bindings/abc_wrapper.pyx":105
+      /* "src/bindings/abc_wrapper.pyx":107
  *             # pCex was retrieved inside suppression block if status==0, but capturing pointer is fine?
  *             # Actually CEX structure is in memory.
  *             if pCex == NULL:             # <<<<<<<<<<<<<<
@@ -3607,19 +3605,19 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
 */
     }
 
-    /* "src/bindings/abc_wrapper.pyx":121
+    /* "src/bindings/abc_wrapper.pyx":123
  *             # Here it's combinational, so 1 frame.
  * 
  *             cex_bits = []             # <<<<<<<<<<<<<<
  *             # We need to know number of PIs to extract correctly or just extract all bits?
  *             # Abc_InfoHasBit(pCex->pData, i)
 */
-    __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 121, __pyx_L1_error)
+    __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 123, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __pyx_v_cex_bits = ((PyObject*)__pyx_t_4);
     __pyx_t_4 = 0;
 
-    /* "src/bindings/abc_wrapper.pyx":126
+    /* "src/bindings/abc_wrapper.pyx":128
  *             # The total bits seems to be in pCex->nBits.
  * 
  *             for i in range(pCex.nBits):             # <<<<<<<<<<<<<<
@@ -3631,7 +3629,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
     for (__pyx_t_16 = 0; __pyx_t_16 < __pyx_t_15; __pyx_t_16+=1) {
       __pyx_v_i = __pyx_t_16;
 
-      /* "src/bindings/abc_wrapper.pyx":127
+      /* "src/bindings/abc_wrapper.pyx":129
  * 
  *             for i in range(pCex.nBits):
  *                 if Abc_InfoHasBit(pCex.pData, i):             # <<<<<<<<<<<<<<
@@ -3641,16 +3639,16 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
       __pyx_t_12 = (Abc_InfoHasBit(__pyx_v_pCex->pData, __pyx_v_i) != 0);
       if (__pyx_t_12) {
 
-        /* "src/bindings/abc_wrapper.pyx":128
+        /* "src/bindings/abc_wrapper.pyx":130
  *             for i in range(pCex.nBits):
  *                 if Abc_InfoHasBit(pCex.pData, i):
  *                     cex_bits.append(1)             # <<<<<<<<<<<<<<
  *                 else:
  *                     cex_bits.append(0)
 */
-        __pyx_t_17 = __Pyx_PyList_Append(__pyx_v_cex_bits, __pyx_mstate_global->__pyx_int_1); if (unlikely(__pyx_t_17 == ((int)-1))) __PYX_ERR(0, 128, __pyx_L1_error)
+        __pyx_t_17 = __Pyx_PyList_Append(__pyx_v_cex_bits, __pyx_mstate_global->__pyx_int_1); if (unlikely(__pyx_t_17 == ((int)-1))) __PYX_ERR(0, 130, __pyx_L1_error)
 
-        /* "src/bindings/abc_wrapper.pyx":127
+        /* "src/bindings/abc_wrapper.pyx":129
  * 
  *             for i in range(pCex.nBits):
  *                 if Abc_InfoHasBit(pCex.pData, i):             # <<<<<<<<<<<<<<
@@ -3660,7 +3658,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
         goto __pyx_L24;
       }
 
-      /* "src/bindings/abc_wrapper.pyx":130
+      /* "src/bindings/abc_wrapper.pyx":132
  *                     cex_bits.append(1)
  *                 else:
  *                     cex_bits.append(0)             # <<<<<<<<<<<<<<
@@ -3668,12 +3666,12 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
  *             return cex_bits
 */
       /*else*/ {
-        __pyx_t_17 = __Pyx_PyList_Append(__pyx_v_cex_bits, __pyx_mstate_global->__pyx_int_0); if (unlikely(__pyx_t_17 == ((int)-1))) __PYX_ERR(0, 130, __pyx_L1_error)
+        __pyx_t_17 = __Pyx_PyList_Append(__pyx_v_cex_bits, __pyx_mstate_global->__pyx_int_0); if (unlikely(__pyx_t_17 == ((int)-1))) __PYX_ERR(0, 132, __pyx_L1_error)
       }
       __pyx_L24:;
     }
 
-    /* "src/bindings/abc_wrapper.pyx":132
+    /* "src/bindings/abc_wrapper.pyx":134
  *                     cex_bits.append(0)
  * 
  *             return cex_bits             # <<<<<<<<<<<<<<
@@ -3685,7 +3683,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
     __pyx_r = __pyx_v_cex_bits;
     goto __pyx_L0;
 
-    /* "src/bindings/abc_wrapper.pyx":100
+    /* "src/bindings/abc_wrapper.pyx":102
  *             return None # Verified!
  * 
  *         if status == 0:             # <<<<<<<<<<<<<<
@@ -3694,7 +3692,7 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
 */
   }
 
-  /* "src/bindings/abc_wrapper.pyx":135
+  /* "src/bindings/abc_wrapper.pyx":137
  * 
  *         # Undecided
  *         logger.warning(f"ABC Check: UNDECIDED in {duration:.4f}s")             # <<<<<<<<<<<<<<
@@ -3703,13 +3701,13 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
 */
   __pyx_t_2 = __pyx_v_logger;
   __Pyx_INCREF(__pyx_t_2);
-  __pyx_t_1 = __Pyx_PyObject_Format(__pyx_v_duration, __pyx_mstate_global->__pyx_kp_u_4f); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 135, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_Format(__pyx_v_duration, __pyx_mstate_global->__pyx_kp_u_4f); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 137, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_t_13[0] = __pyx_mstate_global->__pyx_kp_u_ABC_Check_UNDECIDED_in;
   __pyx_t_13[1] = __pyx_t_1;
   __pyx_t_13[2] = __pyx_mstate_global->__pyx_n_u_s;
   __pyx_t_3 = __Pyx_PyUnicode_Join(__pyx_t_13, 3, 24 + __Pyx_PyUnicode_GET_LENGTH(__pyx_t_1) + 1, 127 | __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_1));
-  if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 135, __pyx_L1_error)
+  if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 137, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_5 = 0;
@@ -3718,12 +3716,12 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
     __pyx_t_4 = __Pyx_PyObject_FastCallMethod((PyObject*)__pyx_mstate_global->__pyx_n_u_warning, __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (1*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 135, __pyx_L1_error)
+    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 137, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "src/bindings/abc_wrapper.pyx":136
+  /* "src/bindings/abc_wrapper.pyx":138
  *         # Undecided
  *         logger.warning(f"ABC Check: UNDECIDED in {duration:.4f}s")
  *         raise RuntimeError("ABC could not decide the problem (returned -1).")             # <<<<<<<<<<<<<<
@@ -3735,14 +3733,14 @@ static PyObject *__pyx_pf_3src_8bindings_11abc_wrapper_12AbcInterface_6check_sat
     PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_mstate_global->__pyx_kp_u_ABC_could_not_decide_the_problem};
     __pyx_t_4 = __Pyx_PyObject_FastCall((PyObject*)(((PyTypeObject*)PyExc_RuntimeError)), __pyx_callargs+__pyx_t_5, (2-__pyx_t_5) | (__pyx_t_5*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 136, __pyx_L1_error)
+    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 138, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
   }
   __Pyx_Raise(__pyx_t_4, 0, 0, 0);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __PYX_ERR(0, 136, __pyx_L1_error)
+  __PYX_ERR(0, 138, __pyx_L1_error)
 
-  /* "src/bindings/abc_wrapper.pyx":49
+  /* "src/bindings/abc_wrapper.pyx":51
  *         return Cmd_CommandExecute(self._frame, cmd_bytes)
  * 
  *     def check_sat(self, str verilog_file):             # <<<<<<<<<<<<<<
@@ -4165,15 +4163,15 @@ static int __Pyx_modinit_type_init_code(__pyx_mstatetype *__pyx_mstate) {
   __Pyx_RefNannySetupContext("__Pyx_modinit_type_init_code", 0);
   /*--- Type init code ---*/
   #if CYTHON_USE_TYPE_SPECS
-  __pyx_mstate->__pyx_ptype_3src_8bindings_11abc_wrapper_AbcInterface = (PyTypeObject *) __Pyx_PyType_FromModuleAndSpec(__pyx_m, &__pyx_type_3src_8bindings_11abc_wrapper_AbcInterface_spec, NULL); if (unlikely(!__pyx_mstate->__pyx_ptype_3src_8bindings_11abc_wrapper_AbcInterface)) __PYX_ERR(0, 34, __pyx_L1_error)
-  if (__Pyx_fix_up_extension_type_from_spec(&__pyx_type_3src_8bindings_11abc_wrapper_AbcInterface_spec, __pyx_mstate->__pyx_ptype_3src_8bindings_11abc_wrapper_AbcInterface) < (0)) __PYX_ERR(0, 34, __pyx_L1_error)
+  __pyx_mstate->__pyx_ptype_3src_8bindings_11abc_wrapper_AbcInterface = (PyTypeObject *) __Pyx_PyType_FromModuleAndSpec(__pyx_m, &__pyx_type_3src_8bindings_11abc_wrapper_AbcInterface_spec, NULL); if (unlikely(!__pyx_mstate->__pyx_ptype_3src_8bindings_11abc_wrapper_AbcInterface)) __PYX_ERR(0, 36, __pyx_L1_error)
+  if (__Pyx_fix_up_extension_type_from_spec(&__pyx_type_3src_8bindings_11abc_wrapper_AbcInterface_spec, __pyx_mstate->__pyx_ptype_3src_8bindings_11abc_wrapper_AbcInterface) < (0)) __PYX_ERR(0, 36, __pyx_L1_error)
   #else
   __pyx_mstate->__pyx_ptype_3src_8bindings_11abc_wrapper_AbcInterface = &__pyx_type_3src_8bindings_11abc_wrapper_AbcInterface;
   #endif
   #if !CYTHON_COMPILING_IN_LIMITED_API
   #endif
   #if !CYTHON_USE_TYPE_SPECS
-  if (__Pyx_PyType_Ready(__pyx_mstate->__pyx_ptype_3src_8bindings_11abc_wrapper_AbcInterface) < (0)) __PYX_ERR(0, 34, __pyx_L1_error)
+  if (__Pyx_PyType_Ready(__pyx_mstate->__pyx_ptype_3src_8bindings_11abc_wrapper_AbcInterface) < (0)) __PYX_ERR(0, 36, __pyx_L1_error)
   #endif
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount((PyObject*)__pyx_mstate->__pyx_ptype_3src_8bindings_11abc_wrapper_AbcInterface);
@@ -4183,8 +4181,8 @@ static int __Pyx_modinit_type_init_code(__pyx_mstatetype *__pyx_mstate) {
     __pyx_mstate->__pyx_ptype_3src_8bindings_11abc_wrapper_AbcInterface->tp_getattro = PyObject_GenericGetAttr;
   }
   #endif
-  if (PyObject_SetAttr(__pyx_m, __pyx_mstate_global->__pyx_n_u_AbcInterface, (PyObject *) __pyx_mstate->__pyx_ptype_3src_8bindings_11abc_wrapper_AbcInterface) < (0)) __PYX_ERR(0, 34, __pyx_L1_error)
-  if (__Pyx_setup_reduce((PyObject *) __pyx_mstate->__pyx_ptype_3src_8bindings_11abc_wrapper_AbcInterface) < (0)) __PYX_ERR(0, 34, __pyx_L1_error)
+  if (PyObject_SetAttr(__pyx_m, __pyx_mstate_global->__pyx_n_u_AbcInterface, (PyObject *) __pyx_mstate->__pyx_ptype_3src_8bindings_11abc_wrapper_AbcInterface) < (0)) __PYX_ERR(0, 36, __pyx_L1_error)
+  if (__Pyx_setup_reduce((PyObject *) __pyx_mstate->__pyx_ptype_3src_8bindings_11abc_wrapper_AbcInterface) < (0)) __PYX_ERR(0, 36, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -4518,7 +4516,7 @@ __Pyx_RefNannySetupContext("PyInit_abc_wrapper", 0);
  * import time
  * from src.utils.suppress import suppress_stdout_stderr             # <<<<<<<<<<<<<<
  * 
- * cdef extern from "base/main/main.h":
+ * cdef extern from "abc_wrapper_headers.h":
 */
   {
     PyObject* const __pyx_imported_names[] = {__pyx_mstate_global->__pyx_n_u_suppress_stdout_stderr};
@@ -4537,34 +4535,34 @@ __Pyx_RefNannySetupContext("PyInit_abc_wrapper", 0);
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "src/bindings/abc_wrapper.pyx":44
+  /* "src/bindings/abc_wrapper.pyx":46
  *         Abc_Stop()
  * 
  *     def run_command(self, str command):             # <<<<<<<<<<<<<<
  *         """Runs an ABC command. Returns the status code (0 = success)."""
  *         cmd_bytes = command.encode('utf-8')
 */
-  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_3src_8bindings_11abc_wrapper_12AbcInterface_5run_command, __Pyx_CYFUNCTION_CCLASS, __pyx_mstate_global->__pyx_n_u_AbcInterface_run_command, NULL, __pyx_mstate_global->__pyx_n_u_src_bindings_abc_wrapper, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[0])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 44, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_3src_8bindings_11abc_wrapper_12AbcInterface_5run_command, __Pyx_CYFUNCTION_CCLASS, __pyx_mstate_global->__pyx_n_u_AbcInterface_run_command, NULL, __pyx_mstate_global->__pyx_n_u_src_bindings_abc_wrapper, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[0])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_2);
   #endif
-  if (__Pyx_SetItemOnTypeDict(__pyx_mstate_global->__pyx_ptype_3src_8bindings_11abc_wrapper_AbcInterface, __pyx_mstate_global->__pyx_n_u_run_command, __pyx_t_2) < (0)) __PYX_ERR(0, 44, __pyx_L1_error)
+  if (__Pyx_SetItemOnTypeDict(__pyx_mstate_global->__pyx_ptype_3src_8bindings_11abc_wrapper_AbcInterface, __pyx_mstate_global->__pyx_n_u_run_command, __pyx_t_2) < (0)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "src/bindings/abc_wrapper.pyx":49
+  /* "src/bindings/abc_wrapper.pyx":51
  *         return Cmd_CommandExecute(self._frame, cmd_bytes)
  * 
  *     def check_sat(self, str verilog_file):             # <<<<<<<<<<<<<<
  *         """
  *         Reads a Verilog file and checks satisfiability.
 */
-  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_3src_8bindings_11abc_wrapper_12AbcInterface_7check_sat, __Pyx_CYFUNCTION_CCLASS, __pyx_mstate_global->__pyx_n_u_AbcInterface_check_sat, NULL, __pyx_mstate_global->__pyx_n_u_src_bindings_abc_wrapper, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[1])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_3src_8bindings_11abc_wrapper_12AbcInterface_7check_sat, __Pyx_CYFUNCTION_CCLASS, __pyx_mstate_global->__pyx_n_u_AbcInterface_check_sat, NULL, __pyx_mstate_global->__pyx_n_u_src_bindings_abc_wrapper, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[1])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 51, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_2);
   #endif
-  if (__Pyx_SetItemOnTypeDict(__pyx_mstate_global->__pyx_ptype_3src_8bindings_11abc_wrapper_AbcInterface, __pyx_mstate_global->__pyx_n_u_check_sat, __pyx_t_2) < (0)) __PYX_ERR(0, 49, __pyx_L1_error)
+  if (__Pyx_SetItemOnTypeDict(__pyx_mstate_global->__pyx_ptype_3src_8bindings_11abc_wrapper_AbcInterface, __pyx_mstate_global->__pyx_n_u_check_sat, __pyx_t_2) < (0)) __PYX_ERR(0, 51, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "(tree fragment)":1
@@ -4658,14 +4656,14 @@ static int __Pyx_InitCachedConstants(__pyx_mstatetype *__pyx_mstate) {
   CYTHON_UNUSED_VAR(__pyx_mstate);
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "src/bindings/abc_wrapper.pyx":61
+  /* "src/bindings/abc_wrapper.pyx":63
  * 
  *         # Suppress ABC Output
  *         with suppress_stdout_stderr():             # <<<<<<<<<<<<<<
  *             # 1. Read
  *             # strict verilog reader in ABC
 */
-  __pyx_mstate_global->__pyx_tuple[0] = PyTuple_Pack(3, Py_None, Py_None, Py_None); if (unlikely(!__pyx_mstate_global->__pyx_tuple[0])) __PYX_ERR(0, 61, __pyx_L1_error)
+  __pyx_mstate_global->__pyx_tuple[0] = PyTuple_Pack(3, Py_None, Py_None, Py_None); if (unlikely(!__pyx_mstate_global->__pyx_tuple[0])) __PYX_ERR(0, 63, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_mstate_global->__pyx_tuple[0]);
   __Pyx_GIVEREF(__pyx_mstate_global->__pyx_tuple[0]);
   #if CYTHON_IMMORTAL_CONSTANTS
@@ -4832,12 +4830,12 @@ static int __Pyx_CreateCodeObjects(__pyx_mstatetype *__pyx_mstate) {
   PyObject* tuple_dedup_map = PyDict_New();
   if (unlikely(!tuple_dedup_map)) return -1;
   {
-    const __Pyx_PyCode_New_function_description descr = {2, 0, 0, 3, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 44};
+    const __Pyx_PyCode_New_function_description descr = {2, 0, 0, 3, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 46};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_self, __pyx_mstate->__pyx_n_u_command, __pyx_mstate->__pyx_n_u_cmd_bytes};
     __pyx_mstate_global->__pyx_codeobj_tab[0] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_src_bindings_abc_wrapper_pyx, __pyx_mstate->__pyx_n_u_run_command, __pyx_mstate->__pyx_kp_b_iso88591_A_G7_1_iq, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[0])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {2, 0, 0, 10, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 49};
+    const __Pyx_PyCode_New_function_description descr = {2, 0, 0, 10, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 51};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_self, __pyx_mstate->__pyx_n_u_verilog_file, __pyx_mstate->__pyx_n_u_logger, __pyx_mstate->__pyx_n_u_start_time, __pyx_mstate->__pyx_n_u_status, __pyx_mstate->__pyx_n_u_pCex, __pyx_mstate->__pyx_n_u_end_time, __pyx_mstate->__pyx_n_u_duration, __pyx_mstate->__pyx_n_u_cex_bits, __pyx_mstate->__pyx_n_u_i};
     __pyx_mstate_global->__pyx_codeobj_tab[1] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_src_bindings_abc_wrapper_pyx, __pyx_mstate->__pyx_n_u_check_sat, __pyx_mstate->__pyx_kp_b_iso88591_A_1_T_a_1_A_AQ_AQ_AQ_AT_7_Q_M_1, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[1])) goto bad;
   }

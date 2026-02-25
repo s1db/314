@@ -11,11 +11,17 @@ from src.fault_localization_schemes import (
 )
 from src.repair_schemes.base import RepairScheme
 from src.repair_schemes.unsat_core import UnsatCoreRepairScheme
+from src.repair_schemes.interpolant import InterpolantRepairScheme
 from src.error_schemes.base import ErrorFormula
 from src.error_schemes.bfns import BFnSErrorFormula
 from src.error_schemes.qbf_skolem import QBFSkolemErrorFormula
 from src.utils.logging_config import setup_logging
-from src.preprocessing import ManthanUnatePreprocessor, GuessUnatePreprocessor
+from src.preprocessing import (
+    ManthanUnatePreprocessor,
+    ManthanUniquePreprocessor,
+    GuessUnatePreprocessor,
+    PySMTUniquePreprocessor,
+)
 
 
 def parse_args():
@@ -34,7 +40,7 @@ def parse_args():
     parser.add_argument(
         "-r",
         "--repair-scheme",
-        choices=["unsat-core"],
+        choices=["unsat-core", "interpolant"],
         default="unsat-core",
         help="Repair Scheme to use",
     )
@@ -86,9 +92,9 @@ def parse_args():
         "-p",
         "--preprocess",
         nargs="*",
-        choices=["manthan-unate", "guess-unate"],
+        choices=["manthan-unate", "manthan-unique", "guess-unate", "pysmt-unique"],
         default=[],
-        help="Preprocessing techniques to enable (e.g., manthan-unate, guess-unate)",
+        help="Preprocessing techniques to enable (e.g., manthan-unate, manthan-unique, guess-unate, pysmt-unique)",
     )
 
     parser.add_argument(
@@ -127,7 +133,8 @@ def main():
         "lexmaxsat": LexMaxSATScheme,
     }
     repair_schemes: Dict[str, Type[RepairScheme]] = {
-        "unsat-core": UnsatCoreRepairScheme
+        "unsat-core": UnsatCoreRepairScheme,
+        "interpolant": InterpolantRepairScheme,
     }
     error_schemes: Dict[str, Type[ErrorFormula]] = {
         "bfns": BFnSErrorFormula,
@@ -141,7 +148,9 @@ def main():
     # Setup Preprocessors
     preprocessor_map = {
         "manthan-unate": lambda: ManthanUnatePreprocessor(),
+        "manthan-unique": lambda: ManthanUniquePreprocessor(),
         "guess-unate": lambda: GuessUnatePreprocessor(verify=not args.no_verify_unate),
+        "pysmt-unique": lambda: PySMTUniquePreprocessor(),
     }
     preprocessors = []
     for p_name in args.preprocess:

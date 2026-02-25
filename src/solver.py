@@ -96,6 +96,14 @@ class Solver:
                 self.logger.info(
                     "Preprocessing resolved %d variables: %s", len(resolved), resolved
                 )
+                # Register dependencies of resolved candidates in the
+                # dependency scheme so the repair loop knows about them.
+                y_set = set(self.y_vars)
+                if isinstance(self.dep_scheme, MutableDependencyScheme):
+                    for v in resolved:
+                        func = self.candidates[v]
+                        used_vars = func.support & (set(self.x_vars) | y_set)
+                        self.dep_scheme.update_dependencies(v, used_vars)
 
         self.logger.info("Learning initial candidates...")
 

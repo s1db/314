@@ -63,11 +63,9 @@ class LexMaxSATScheme(MaxSATScheme):
 
             lit = var if current_val else -var
             if not func.repairable:
-                # Non-repairable variables are FIXED as hard constraints
-                wcnf.append([lit])
-            else:
-                weight = candidate_weights.get(var, 1)
-                wcnf.append([lit], weight=weight)
+                continue
+            weight = candidate_weights.get(var, 1)
+            wcnf.append([lit], weight=weight)
 
         # 5. Solve MaxSAT
         with RC2Stratified(wcnf) as rc2:

@@ -12,11 +12,17 @@ extensions = [
         "src.bindings.abc_wrapper",
         sources=["src/bindings/abc_wrapper.pyx"],
         include_dirs=[abc_include_dir],
-        library_dirs=[abc_lib_dir],
-        libraries=["abc", "m", "dl", "pthread"],
-        extra_compile_args=["-fPIC", "-O3", "-Wno-unused-function", "-Wno-unused-result", "-Wno-narrowing"],
-        define_macros=[('ABC_USE_STDINT_H', '1')],
-        language="c++", # ABC is C but often linked with C++ if needed, though pure C is fine. keeping flexible.
+        extra_objects=[os.path.join(abc_lib_dir, "libabc.a")],
+        libraries=["readline", "ncurses", "m", "dl", "pthread"],
+        extra_compile_args=[
+            "-fPIC",
+            "-O3",
+            "-Wno-unused-function",
+            "-Wno-unused-result",
+            "-Wno-narrowing",
+        ],
+        define_macros=[("ABC_USE_STDINT_H", "1")],
+        language="c++",  # ABC is C but often linked with C++ if needed, though pure C is fine. keeping flexible.
     )
 ]
 
@@ -24,7 +30,9 @@ setup(
     name="314",
     version="0.1.0",
     packages=find_packages(),
-    ext_modules=cythonize(extensions, compiler_directives={'language_level': "3"}, annotate=True),
+    ext_modules=cythonize(
+        extensions, compiler_directives={"language_level": "3"}, annotate=True
+    ),
     install_requires=[
         "numpy>=2.4.2",
         "pycmsgen>=6.1.1",

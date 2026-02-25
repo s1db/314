@@ -7,17 +7,19 @@ import logging
 import time
 from src.utils.suppress import suppress_stdout_stderr
 
-cdef extern from "base/main/main.h":
+cdef extern from "abc_wrapper_headers.h":
     ctypedef struct Abc_Frame_t:
         pass
     void Abc_Start()
     void Abc_Stop()
     Abc_Frame_t * Abc_FrameGetGlobalFrame()
 
-cdef extern from "base/cmd/cmd.h":
+# base/cmd/cmd.h functions included in abc_wrapper_headers.h
+cdef extern from "abc_wrapper_headers.h":
     int Cmd_CommandExecute(Abc_Frame_t * pAbc, const char * sCommand)
 
-cdef extern from "base/abc/abc.h":
+# base/abc/abc.h functions included in abc_wrapper_headers.h
+cdef extern from "abc_wrapper_headers.h":
     ctypedef struct Abc_Cex_t:
         int iPo
         int nRegs
