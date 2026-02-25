@@ -37,7 +37,8 @@ checkers/checkSkolem
 !test_instances/qbf/*.qdimacs
 !test_instances/dqbf/*.qdimacs
 *.cnf
-*.dot*.so
+*.dot
+*.so
 *.html
 *.cpp
 *.c
