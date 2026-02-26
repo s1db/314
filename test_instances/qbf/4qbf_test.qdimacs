@@ -1,0 +1,11 @@
+c 4QBF Instance
+c \exists W \forall X \exists Y \forall Z
+p cnf 5 4
+e 1 0
+a 2 0
+e 3 4 0
+a 5 0
+1 2 3 5 0
+-1 -2 0
+4 -5 0
+-3 4 0

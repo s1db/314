@@ -1,0 +1,21 @@
+--- certcheck.c
++++ certcheck.c
+@@ -67,9 +67,16 @@
+     return (unsigned)var * 2;
+ }
+ 
++/**
++ * Convert integer to string.
++ * 
++ * NOTE: The original version used malloc(ceil(log10(i)) + 1) which caused 
++ * a buffer overflow for variable IDs that are powers of 10 (e.g., 10, 100) 
++ * because it didn't account for the null terminator correctly in those cases.
++ * Fixed by using a safe constant buffer size.
++ */
+ static char* int2str(int i) {
+-    size_t buffer_size = (((size_t)ceil(log10(i)) + 1) * sizeof(char));
+-    char* str = malloc(buffer_size);
++    char* str = malloc(16);
+     sprintf(str, "%d", i);
+     return str;
+ }

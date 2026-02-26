@@ -319,7 +319,7 @@ class FunctionManager:
 
     def get_and(self, children: List[CandidateFunction]) -> CandidateFunction:
         # Simplification
-        flattened = []
+        flattened: List[CandidateFunction] = []
         for child in children:
             if child.is_false:
                 return self.get_false()
@@ -356,7 +356,7 @@ class FunctionManager:
         )
 
     def get_or(self, children: List[CandidateFunction]) -> CandidateFunction:
-        flattened = []
+        flattened: List[CandidateFunction] = []
         for child in children:
             if child.is_true:
                 return self.get_true()

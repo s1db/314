@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Type
+from typing import Dict, List, Type, Tuple
 
 import logging
 from src.instance import Instance
@@ -15,6 +15,7 @@ from src.preprocessing.base import Preprocessor
 from src.repair_schemes.base import RepairScheme
 from src.outputs.verilog_skolem import write_verilog_skolem
 from src.outputs.aiger_skolem import write_aiger_skolem
+from src.outputs.aiger_unsat import write_aiger_unsat
 
 
 class Solver:
@@ -119,10 +120,22 @@ class Solver:
         # Phase 3: Verification Loop
         self.logger.info("Entering verification loop...")
 
+        seen_states = set()
+        seen_repairs: List[Tuple[str, Tuple[int, ...], Dict[int, bool]]] = []
+
         iteration = 0
         while iteration <= self.max_iterations:
             iteration += 1
             self.logger.info(f"--- Iteration {iteration} ---")
+
+            state_str = str({k: str(v) for k, v in sorted(self.candidates.items())})
+            if state_str in seen_states:
+                self.logger.error(
+                    "Infinite repair loop detected (candidate functions cycle). The QBF is proven FALSE."
+                )
+                print("s False")
+                return
+            seen_states.add(state_str)
 
             # 1. Check
             is_sat, assignment, oracle_assignment = self.error_formula.check(
@@ -137,6 +150,16 @@ class Solver:
             assert assignment is not None
             self.logger.info("SAT! Counter-example found.")
 
+            # Print assignment to help user debug UNSAT
+            assignment_str = " ".join(
+                [
+                    f"{var}={val}"
+                    for var, val in sorted(assignment.items())
+                    if var in self.x_vars
+                ]
+            )
+            self.logger.info(f"Counter-example X assignment: {assignment_str}")
+
             # 2. Fault Localization
             self.logger.info("Localizing faults...")
             suspects = self.fl_scheme.localize(
@@ -145,6 +168,12 @@ class Solver:
             if len(suspects) == 0:
                 self.logger.warning("Valid Skolem functions but verification failed.")
                 print("s False")
+
+                # Print assignment over universals (X)
+                assignment_list = [
+                    str(x) if assignment.get(x) else f"-{x}" for x in self.x_vars
+                ]
+                print(f"V {' '.join(assignment_list)}")
                 return
             # Filter out non-repairable candidates (resolved by preprocessing)
             suspects = [
@@ -152,6 +181,39 @@ class Solver:
                 for s in suspects
                 if s not in self.candidates or self.candidates[s].repairable
             ]
+
+            # Fast cycle detection using Counterexample + Suspects
+            # We store the state in a list to preserve chronological order.
+            # When we see a state we've already visited, everything from its first
+            # occurrence to now constitutes the unresolvable conflict cycle.
+            repair_key = (assignment_str, tuple(sorted(suspects)))
+            repair_state = (assignment_str, tuple(sorted(suspects)), assignment)
+
+            try:
+                cycle_start_idx = [r[0:2] for r in seen_repairs].index(repair_key)
+                # We found a loop!
+                self.logger.error(
+                    "Infinite repair loop detected (counter-example and suspects cycle)."
+                )
+                self.logger.error(
+                    "The following sequence of conflicting universal assignments prove the formula is FALSE:"
+                )
+
+                # Slicing the cycle path
+                cycle_path = seen_repairs[cycle_start_idx:]
+                for step, (seen_assignment, seen_suspects, _) in enumerate(cycle_path):
+                    self.logger.error(
+                        f"  [{step + 1}/{len(cycle_path)}] Universal Assignment: {seen_assignment}"
+                    )
+                    self.logger.error(
+                        f"          Conflicting Suspects: {seen_suspects}"
+                    )
+
+                self.print_unsat_solution([r[2] for r in cycle_path])
+                return
+            except ValueError:
+                # State not seen before, add it
+                seen_repairs.append(repair_state)
 
             # 3. Repair
             self.candidates = self.repair_scheme.repair(
@@ -163,7 +225,7 @@ class Solver:
         return
 
     def print_solution(self):
-        print("s TRUE")
+        print("s SATISFIABLE / TRUE")
 
         # Write Verilog
         # Write Certificates
@@ -189,4 +251,30 @@ class Solver:
             output_path = output_dir / f"{instance_name}.caqe.aag"
             write_aiger_skolem(
                 output_path, self.instance, self.candidates, include_result_output=True
+            )
+
+    def print_unsat_solution(self, cycle_assignments: List[Dict[int, bool]]):
+        print("s UNSATISFIABLE / FALSE")
+        instance_name = self.instance_path.stem
+        output_dir = self.instance_path.parent.parent / "outputs"
+        if not output_dir.exists():
+            output_dir = Path("outputs")
+            output_dir.mkdir(exist_ok=True)
+
+        if "aiger" in self.cert_formats:
+            output_path = output_dir / f"{instance_name}_unsat.aag"
+            write_aiger_unsat(
+                output_path,
+                self.instance,
+                cycle_assignments,
+                include_result_output=False,
+            )
+
+        if "aiger_caqe" in self.cert_formats:
+            output_path = output_dir / f"{instance_name}_unsat.caqe.aag"
+            write_aiger_unsat(
+                output_path,
+                self.instance,
+                cycle_assignments,
+                include_result_output=True,
             )

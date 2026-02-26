@@ -84,6 +84,26 @@ class QBFParser:
         if not header_parsed:
             raise ValueError("No problem line found")
 
+        quantified_vars_set = {v for _, q_vars in quantifiers for v in q_vars}
+
+        all_vars = set(range(1, num_vars + 1))
+        for clause in clauses:
+            for lit in clause:
+                all_vars.add(abs(lit))
+
+        unquantified_vars = sorted(list(all_vars - quantified_vars_set))
+
+        # Add unquantified variables to the outermost existential block
+        if unquantified_vars:
+            if not quantifiers:
+                quantifiers.append(("e", unquantified_vars))
+            elif quantifiers[0][0] == "e":
+                # Prepend unquantified variables to the outermost existential block
+                quantifiers[0] = ("e", unquantified_vars + quantifiers[0][1])
+            else:
+                # Add a new outermost existential block
+                quantifiers.insert(0, ("e", unquantified_vars))
+
         return Instance(
             num_vars, num_clauses, quantifiers, clauses, dependency_scheme_class
         )

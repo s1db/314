@@ -21,7 +21,10 @@ from __future__ import annotations
 import logging
 import os
 import sys
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.dependency_schemes.base import DependencyScheme
 
 import numpy as np
 from pysat.solvers import Solver as SATSolver
@@ -357,6 +360,7 @@ class ManthanUniquePreprocessor(Preprocessor):
         candidates: Dict[int, CandidateFunction],
         function_manager: FunctionManager,
         samples: Optional[np.ndarray] = None,
+        dep_scheme: Optional["DependencyScheme"] = None,
     ) -> None:
         if not y_vars:
             return
@@ -387,6 +391,7 @@ class ManthanUniquePreprocessor(Preprocessor):
                 resolved,
                 candidates,
                 function_manager,
+                dep_scheme,
             )
         finally:
             checker.delete()
@@ -401,6 +406,7 @@ class ManthanUniquePreprocessor(Preprocessor):
         resolved: Set[int],
         candidates: Dict[int, CandidateFunction],
         function_manager: FunctionManager,
+        dep_scheme: Optional["DependencyScheme"] = None,
     ) -> None:
         num_vars = _max_var_index(clauses)
         offset = 5 * num_vars + 100
@@ -410,8 +416,11 @@ class ManthanUniquePreprocessor(Preprocessor):
             if y in resolved:
                 continue
 
-            defining_y = y_vars[:itr]
-            defining_vars = x_vars + defining_y
+            if dep_scheme:
+                defining_vars = list(dep_scheme.prefix_scope.get(y, set()))
+            else:
+                defining_y = y_vars[:itr]
+                defining_vars = x_vars + defining_y
 
             result = checker.check_definability(defining_vars, y, offset)
 

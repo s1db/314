@@ -11,6 +11,8 @@ wheels/
 
 #ruff
 .ruff_cache
+.mypy_cache
+.pytest_cache
 
 #abc
 abc.history
@@ -26,8 +28,8 @@ checkers/checkSkolem
 
 *.log
 
-./outputs/
-
+outputs/*
+eval/
 *.v
 *.aig
 *.aag

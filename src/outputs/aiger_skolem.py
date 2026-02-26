@@ -28,7 +28,7 @@ def write_aiger_skolem(
     inputs: List[int] = instance.get_universal_vars()
     outputs: List[int] = instance.get_existential_vars()
 
-    aiger_var_counter = 0
+    aiger_var_counter = instance.num_vars
 
     def new_aiger_var():
         nonlocal aiger_var_counter
@@ -49,8 +49,8 @@ def write_aiger_skolem(
     # We'll assign them the first I variables
     qdimacs_to_aiger_lit: Dict[int, int] = {}
 
-    for u_var in inputs:
-        idx = new_aiger_var()
+    for i, u_var in enumerate(inputs):
+        idx = i + 1
         # Positive literal is 2*idx
         qdimacs_to_aiger_lit[u_var] = 2 * idx
 

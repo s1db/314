@@ -20,7 +20,10 @@ shared (defining) variables.
 from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.dependency_schemes.base import DependencyScheme
 
 import numpy as np
 
@@ -291,6 +294,7 @@ class PySMTUniquePreprocessor(Preprocessor):
         candidates: Dict[int, CandidateFunction],
         function_manager: FunctionManager,
         samples: Optional[np.ndarray] = None,
+        dep_scheme: Optional["DependencyScheme"] = None,
     ) -> None:
         if not y_vars:
             return
@@ -316,8 +320,11 @@ class PySMTUniquePreprocessor(Preprocessor):
             if y in resolved:
                 continue
 
-            defining_y = y_vars[:itr]
-            defining_vars = x_vars + defining_y
+            if dep_scheme:
+                defining_vars = list(dep_scheme.prefix_scope.get(y, set()))
+            else:
+                defining_y = y_vars[:itr]
+                defining_vars = x_vars + defining_y
 
             is_unique, interpolant = checker.check_definability(defining_vars, y)
 

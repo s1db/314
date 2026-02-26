@@ -13,8 +13,8 @@ Run the setup script to build all checkers:
 ```
 
 This will download, patch, build, and install:
-- **certcheck**: Certificate checker for QBF instances.
-- **caqe_certcheck**: CAQE's certificate checker.
+- **certcheck**: Certificate checker for QBF instances (with a visited array to prevent exponential traversal in strashed certificates).
+- **caqe_certcheck**: CAQE's certificate checker (with buffer overflow fix).
 - **Manthan/checkSkolem**: Skolem function verification tool.
 
 ### Usage
@@ -61,6 +61,15 @@ The build process applies minimal patches to fix compatibility and performance i
 **Why:**
 - **unistd.h**: Required for macOS systems where `sys/unistd.h` doesn't provide all necessary declarations.
 - **Visited array**: The patch adds a visited tracking mechanism to ensure each node is processed only once, preventing infinite loops.
+
+### caqe_certcheck_fix.patch
+
+**Changes:**
+1. **certcheck.c**: Replaced `malloc(ceil(log10(i)) + 1)` with `malloc(16)` in `int2str`.
+
+**Why:**
+Original code had a buffer overflow for variable IDs that are powers of 10. `ceil(log10(10))` is `1`, so `1+1=2` bytes, which is too small for `"10\0"` (3 bytes).
+Using a fixed 16-byte buffer is safe and more robust.
 
 **Details:**
 ```c

@@ -6,7 +6,8 @@ from typing import Type, Dict
 from src.solver import Solver
 from src.fault_localization_schemes import (
     FaultLocalizationScheme,
-    MaxSATScheme,
+    Manthan1MaxSATScheme,
+    QuantifiedMaxSATScheme,
     LexMaxSATScheme,
 )
 from src.repair_schemes.base import RepairScheme
@@ -32,8 +33,8 @@ def parse_args():
     parser.add_argument(
         "-f",
         "--fl-scheme",
-        choices=["maxsat", "lexmaxsat"],
-        default="lexmaxsat",
+        choices=["manthan1-maxsat", "q-maxsat", "lexmaxsat"],
+        default="q-maxsat",
         help="Fault Localization Scheme to use",
     )
 
@@ -129,7 +130,8 @@ def main():
 
     # Map choices to classes
     fl_schemes: Dict[str, Type[FaultLocalizationScheme]] = {
-        "maxsat": MaxSATScheme,
+        "manthan1-maxsat": Manthan1MaxSATScheme,
+        "q-maxsat": QuantifiedMaxSATScheme,
         "lexmaxsat": LexMaxSATScheme,
     }
     repair_schemes: Dict[str, Type[RepairScheme]] = {

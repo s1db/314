@@ -71,6 +71,10 @@ else
     tar -xf caqe-2.tar.gz
     
     cd caqe-2
+    echo "Patching CAQE CertCheck..."
+    cp "$SCRIPT_DIR/caqe_certcheck_fix.patch" .
+    patch -p0 < caqe_certcheck_fix.patch
+    
     echo "Building CAQE Solver..."
     ./configure
     make -j"$CORES"

@@ -1,5 +1,5 @@
 import pytest
-from src.fault_localization_schemes.maxsat import MaxSATScheme
+from src.fault_localization_schemes.maxsat import Manthan1MaxSATScheme
 from src.fault_localization_schemes.lexmaxsat import LexMaxSATScheme
 from src.candidate_function import FunctionManager
 from src.instance_parsers.qbf import Instance
@@ -23,7 +23,7 @@ class TestFaultLocalization:
         return instance
 
     def test_maxsat_simple_unsat(self, manager, simple_instance):
-        scheme = MaxSATScheme(simple_instance)
+        scheme = Manthan1MaxSATScheme(simple_instance)
 
         # Candidate y1 = 0 (False)
         # Assignment x1 = 0, y1 = 0
@@ -50,7 +50,7 @@ class TestFaultLocalization:
         assert 2 in faults
 
     def test_maxsat_no_conflict(self, manager, simple_instance):
-        scheme = MaxSATScheme(simple_instance)
+        scheme = Manthan1MaxSATScheme(simple_instance)
 
         # X1=1. Matrix (1 or y1) is True regardless of y1.
         # Candidate y1=0.

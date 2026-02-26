@@ -62,3 +62,41 @@ def test_missing_header():
 1 0"""
     with pytest.raises(ValueError):
         QBFParser.from_qdimacs(content)
+
+
+def test_unquantified_vars():
+    content = """p cnf 4 2
+a 3 0
+-1 2 0
+3 -4 0"""
+    instance = QBFParser.from_qdimacs(content)
+    assert instance.quantifiers == [("e", [1, 2, 4]), ("a", [3])]
+
+
+def test_unquantified_vars_existential_first():
+    content = """p cnf 4 2
+e 3 0
+-1 2 0
+3 -4 0"""
+    instance = QBFParser.from_qdimacs(content)
+    assert instance.quantifiers == [("e", [1, 2, 4, 3])]
+
+
+def test_alternating_blocks_merged():
+    content = """p cnf 5 2
+e 1 0
+e 2 0
+a 3 0
+a 4 0
+e 5 0
+1 0
+2 0"""
+    instance = QBFParser.from_qdimacs(content)
+    assert instance.quantifiers == [("e", [1, 2]), ("a", [3, 4]), ("e", [5])]
+
+
+def test_unquantified_vars_no_quantifiers():
+    content = """p cnf 3 1
+1 2 -3 0"""
+    instance = QBFParser.from_qdimacs(content)
+    assert instance.quantifiers == [("e", [1, 2, 3])]

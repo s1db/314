@@ -2,7 +2,7 @@ from typing import Dict, List, Optional, TYPE_CHECKING
 from pysat.formula import WCNF
 from pysat.examples.rc2 import RC2Stratified
 from src.candidate_function import CandidateFunction
-from .maxsat import MaxSATScheme
+from .maxsat import Manthan1MaxSATScheme
 import logging
 
 if TYPE_CHECKING:
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class LexMaxSATScheme(MaxSATScheme):
+class LexMaxSATScheme(Manthan1MaxSATScheme):
     """
     Fault localization based on Lexicographical MaxSAT using variable weights.
     Prioritizes keeping values of variables that appear earlier in the computation order.
@@ -63,6 +63,7 @@ class LexMaxSATScheme(MaxSATScheme):
 
             lit = var if current_val else -var
             if not func.repairable:
+                wcnf.append([lit])
                 continue
             weight = candidate_weights.get(var, 1)
             wcnf.append([lit], weight=weight)

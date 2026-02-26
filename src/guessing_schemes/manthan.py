@@ -72,16 +72,23 @@ class ManthanGuesser(BaseCandidateFunctionGuesser):
                     feature_cols.append(var_to_col[var])
                     feature_map.append(var)
 
+            y = data_matrix[:, var_to_col[target_y]]
+
             if not feature_cols:
-                # Fallback: Constant function? Or use X?
-                # If no potential dependencies (e.g., first E-block),
-                # it should depend on previous X-vars.
-                # If potential_dependencies is correct, it includes X-vars.
-                # If empty, it means no previous variables.
-                pass
+                # If no features, the variable must be a constant (True/False).
+                # Predict whichever value is more common in the samples.
+                # Often triggered when outermost existential variables are not constrained by any other variables.
+                counts = np.bincount(y)
+                most_common = np.argmax(counts)
+                candidates[target_y] = (
+                    function_manager.get_true()
+                    if most_common == 1
+                    else function_manager.get_false()
+                )
+                dependency_scheme.update_dependencies(target_y, set())
+                continue
 
             X = data_matrix[:, feature_cols]
-            y = data_matrix[:, var_to_col[target_y]]
 
             # 2. Learn Decision Tree
             try:
@@ -101,7 +108,7 @@ class ManthanGuesser(BaseCandidateFunctionGuesser):
 
             except Exception as e:
                 logger.error(f"Failed to learn candidate for {target_y}: {e}")
-                candidates[target_y] = function_manager.get_or([])  # False
+                candidates[target_y] = function_manager.get_false()
 
         return candidates
 
