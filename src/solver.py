@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Type, Tuple
+from typing import Dict, List, Type
 
 import logging
 from src.instance import Instance
@@ -15,7 +15,6 @@ from src.preprocessing.base import Preprocessor
 from src.repair_schemes.base import RepairScheme
 from src.outputs.verilog_skolem import write_verilog_skolem
 from src.outputs.aiger_skolem import write_aiger_skolem
-from src.outputs.aiger_unsat import write_aiger_unsat
 
 
 class Solver:
@@ -29,6 +28,7 @@ class Solver:
         cert_formats: List[str] | None = None,
         error_formula_cls: Type[ErrorFormula] = BFnSErrorFormula,
         preprocessors: List[Preprocessor] | None = None,
+        output_dir: Path | None = None,
     ):
 
         self.logger = logging.getLogger(__name__)
@@ -37,6 +37,7 @@ class Solver:
         self.max_iterations = max_iterations
         self.cert_formats = cert_formats if cert_formats else ["verilog"]
         self.preprocessors = preprocessors if preprocessors else []
+        self.output_dir = output_dir
 
         # 1. Parse Instance
         self.logger.info(f"Parsing instance: {instance_path}")
@@ -175,11 +176,16 @@ class Solver:
         # Write Verilog
         # Write Certificates
         instance_name = self.instance_path.stem
-        output_dir = self.instance_path.parent.parent / "outputs"
-        # Assuming standard structure: root/instances/file.qdimacs -> root/outputs/
-        if not output_dir.exists():
-            output_dir = Path("outputs")
-            output_dir.mkdir(exist_ok=True)
+
+        if self.output_dir:
+            output_dir = self.output_dir
+        else:
+            # Default fallback logic
+            output_dir = self.instance_path.parent.parent / "outputs"
+            if not output_dir.exists():
+                output_dir = Path("outputs")
+
+        output_dir.mkdir(exist_ok=True, parents=True)
 
         if "verilog" in self.cert_formats:
             output_path = output_dir / f"{instance_name}.v"

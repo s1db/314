@@ -104,6 +104,13 @@ def parse_args():
         help="Disable formal verification in guess-unate preprocessor",
     )
 
+    parser.add_argument(
+        "-o",
+        "--output-dir",
+        type=Path,
+        help="Directory to store proof certificates. Defaults to current directory.",
+    )
+
     return parser.parse_args()
 
 
@@ -168,6 +175,7 @@ def main():
         cert_formats=args.cert_format,
         error_formula_cls=error_cls,
         preprocessors=preprocessors,
+        output_dir=args.output_dir,
     )
 
     solver.solve()
