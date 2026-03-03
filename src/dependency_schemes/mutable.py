@@ -1,4 +1,4 @@
-from typing import Set, Dict, List, Tuple
+from typing import Set, Dict, List, Tuple, Optional
 from src.dependency_schemes.base import DependencyScheme, DependencyViolationError
 
 
@@ -19,12 +19,13 @@ class MutableDependencyScheme(DependencyScheme):
         self,
         quantifiers: List[Tuple[str, List[int]]],
         num_vars: int,
+        clauses: Optional[List[List[int]]] = None,
     ):
         # Initialize before super().__init__ calls compute()
         self.hard_predecessors: Dict[int, Set[int]] = {}
         self.same_block_peers: Dict[int, Set[int]] = {}
 
-        super().__init__(quantifiers, num_vars)
+        super().__init__(quantifiers, num_vars, clauses)
 
         # Precompute structural constraints from the QBF prefix
         self._initialize_structure()

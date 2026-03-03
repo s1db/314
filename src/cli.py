@@ -2,7 +2,7 @@ import argparse
 import sys
 import logging
 from pathlib import Path
-from typing import Type, Dict
+from typing import Type, Dict, List
 from src.solver import Solver
 from src.fault_localization_schemes import (
     FaultLocalizationScheme,
@@ -22,6 +22,19 @@ from src.preprocessing import (
     ManthanUniquePreprocessor,
     GuessUnatePreprocessor,
     PySMTUniquePreprocessor,
+)
+from src.dependency_schemes import (
+    DependencyScheme,
+    MutableDependencyScheme,
+    StandardDependencyScheme,
+    TriangleDependencyScheme,
+    TrivialDependencyScheme,
+    UniTriDependencyScheme,
+    TrivialInterBlockDependencyScheme,
+)
+from src.guessing_schemes import (
+    ManthanGuesser,
+    DependencyGuidedGuesser,
 )
 
 
@@ -99,6 +112,27 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--dep-scheme",
+        choices=[
+            "mutable",
+            "standard",
+            "triangle",
+            "trivial",
+            "unitri",
+            "trivial-inter-block",
+        ],
+        default="mutable",
+        help="Dependency scheme to use",
+    )
+
+    parser.add_argument(
+        "--guesser",
+        choices=["manthan", "dependency-guided"],
+        default="manthan",
+        help="Guesser scheme to use",
+    )
+
+    parser.add_argument(
         "--no-verify-unate",
         action="store_true",
         help="Disable formal verification in guess-unate preprocessor",
@@ -149,10 +183,24 @@ def main():
         "bfns": BFnSErrorFormula,
         "qbf-skolem": QBFSkolemErrorFormula,
     }
+    dep_schemes: Dict[str, Type[DependencyScheme]] = {
+        "mutable": MutableDependencyScheme,
+        "standard": StandardDependencyScheme,
+        "triangle": TriangleDependencyScheme,
+        "trivial": TrivialDependencyScheme,
+        "unitri": UniTriDependencyScheme,
+        "trivial-inter-block": TrivialInterBlockDependencyScheme,
+    }
+    guesser_schemes = {
+        "manthan": ManthanGuesser,
+        "dependency-guided": DependencyGuidedGuesser,
+    }
 
     fl_cls = fl_schemes[args.fl_scheme]
     repair_cls = repair_schemes[args.repair_scheme]
     error_cls = error_schemes[args.error_scheme]
+    dep_cls = dep_schemes[args.dep_scheme]
+    guesser_cls = guesser_schemes[args.guesser]
 
     # Setup Preprocessors
     preprocessor_map = {
@@ -176,6 +224,8 @@ def main():
         error_formula_cls=error_cls,
         preprocessors=preprocessors,
         output_dir=args.output_dir,
+        dependency_scheme_cls=dep_cls,
+        guesser_cls=guesser_cls,
     )
 
     solver.solve()

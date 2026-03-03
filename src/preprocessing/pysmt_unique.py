@@ -188,13 +188,19 @@ class _PySMTDefinabilityChecker:
         self,
         clauses: List[List[int]],
         existentials: List[int],
+        num_vars: Optional[int] = None,
     ):
         self.clauses = clauses
         self.existentials = existentials
-        self.max_variable = max((abs(lit) for c in clauses for lit in c), default=0)
+        if num_vars is None:
+            self.max_variable = max((abs(lit) for c in clauses for lit in c), default=0)
+        else:
+            self.max_variable = num_vars
 
         # Build variable sets
         all_vars: Set[int] = {abs(lit) for clause in clauses for lit in clause}
+        if num_vars is not None:
+            all_vars.update(existentials)
         self.all_vars = all_vars
 
         # Create renaming for primed copies: v → v + max_var
@@ -305,14 +311,20 @@ class PySMTUniquePreprocessor(Preprocessor):
         # Augment the formula with Tseitin encodings of already-resolved
         # candidates so the checker can leverage them for cascading detection.
         augmented_clauses = list(clauses)
-        num_vars = max(max(x_vars), max(y_vars))
+        num_vars = max(
+            max((abs(lit) for c in clauses for lit in c), default=0),
+            max(x_vars, default=0),
+            max(y_vars, default=0),
+        )
         aux_start = num_vars + 1
         for y in resolved:
             if y in candidates:
                 new_clauses, aux_start = candidates[y].to_cnf(y, aux_start)
                 augmented_clauses.extend(new_clauses)
 
-        checker = _PySMTDefinabilityChecker(augmented_clauses, y_vars)
+        checker = _PySMTDefinabilityChecker(
+            augmented_clauses, y_vars, num_vars=num_vars
+        )
 
         unique_vars: List[int] = []
 

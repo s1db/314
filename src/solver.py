@@ -2,11 +2,15 @@ from pathlib import Path
 from typing import Dict, List, Type
 
 import logging
+from src.dependency_schemes.base import DependencyScheme
 from src.instance import Instance
 from src.instance_parsers.qbf import QBFParser
 from src.sampling_schemes.uniform import UniformSampler
 from src.dependency_schemes.mutable import MutableDependencyScheme
+from src.guessing_schemes.base import BaseCandidateFunctionGuesser
 from src.guessing_schemes.manthan import ManthanGuesser
+from src.dependency_schemes.static import StaticDependencyScheme
+from src.guessing_schemes.dependency_guided import DependencyGuidedGuesser
 from src.candidate_function import FunctionManager, CandidateFunction
 from src.error_schemes.base import ErrorFormula
 from src.error_schemes.bfns import BFnSErrorFormula
@@ -27,8 +31,10 @@ class Solver:
         max_iterations: int = 1000,
         cert_formats: List[str] | None = None,
         error_formula_cls: Type[ErrorFormula] = BFnSErrorFormula,
+        dependency_scheme_cls: Type[DependencyScheme] = MutableDependencyScheme,
         preprocessors: List[Preprocessor] | None = None,
         output_dir: Path | None = None,
+        guesser_cls: Type[BaseCandidateFunctionGuesser] = ManthanGuesser,
     ):
 
         self.logger = logging.getLogger(__name__)
@@ -43,7 +49,7 @@ class Solver:
         self.logger.info(f"Parsing instance: {instance_path}")
         # Pass the desired dependency scheme class to the parser
         self.instance: Instance = QBFParser.from_file(
-            instance_path, dependency_scheme_class=MutableDependencyScheme
+            instance_path, dependency_scheme_class=dependency_scheme_cls
         )
 
         self.logger.info(
@@ -61,7 +67,17 @@ class Solver:
 
         self.sampler = UniformSampler(all_vars, self.instance.clauses)
         self.function_manager = FunctionManager()
-        self.learner = ManthanGuesser()
+
+        # Select the appropriate learner
+        if guesser_cls == ManthanGuesser and isinstance(
+            self.dep_scheme, StaticDependencyScheme
+        ):
+            self.logger.info(
+                "Static dependency scheme detected. Selecting DependencyGuidedGuesser."
+            )
+            self.learner = DependencyGuidedGuesser()
+        else:
+            self.learner = guesser_cls()
 
         self.error_formula = error_formula_cls()
 

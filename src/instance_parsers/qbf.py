@@ -71,7 +71,10 @@ class QBFParser:
                         break
                     vars.append(val)
 
-                quantifiers.append((q_type, vars))
+                if quantifiers and quantifiers[-1][0] == q_type:
+                    quantifiers[-1] = (q_type, quantifiers[-1][1] + vars)
+                else:
+                    quantifiers.append((q_type, vars))
 
             else:
                 lit = int(token)

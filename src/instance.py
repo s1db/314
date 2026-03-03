@@ -27,6 +27,7 @@ class Instance:
         self.dependency_scheme = dependency_scheme_class(
             quantifiers=self.quantifiers,
             num_vars=self.num_vars,
+            clauses=self.clauses,
         )
 
     def validate(self) -> None:

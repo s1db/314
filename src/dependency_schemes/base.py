@@ -23,9 +23,11 @@ class DependencyScheme(ABC):
         self,
         quantifiers: List[Tuple[str, List[int]]],
         num_vars: int,
+        clauses: Optional[List[List[int]]] = None,
     ):
         self.quantifiers = quantifiers
         self.num_vars = num_vars
+        self.clauses = clauses if clauses is not None else []
         self.dependencies: Dict[int, Set[int]] = {}
         self.prefix_scope: Dict[int, Set[int]] = {}
 
@@ -36,6 +38,11 @@ class DependencyScheme(ABC):
     @abstractmethod
     def compute(self) -> None:
         """Populate self.dependencies. Called once during __init__."""
+        pass
+
+    @abstractmethod
+    def get_allowed_variables(self, target_variable: int) -> Set[int]:
+        """Returns the set of variables that target_variable is allowed to depend on."""
         pass
 
     def _compute_prefix_scope(self) -> None:
@@ -76,17 +83,12 @@ class DependencyScheme(ABC):
         return target in self._reachable_from(start)
 
     def get_topological_order(self, nodes: Optional[Set[int]] = None) -> List[int]:
-        """
-        Kahn's algorithm for topological sort.
-        Returns variables in computation order: [independent ... dependent].
-
-        If `nodes` is None, sorts all variables in the dependency graph.
-        Raises DependencyViolationError if a cycle is detected.
-        """
+        """Returns a topological sort of the variables in the dependency graph."""
         if nodes is None:
-            nodes = set(self.dependencies.keys())
-            for deps in self.dependencies.values():
-                nodes.update(deps)
+            # Include all variables that appear in any quantifier block
+            nodes = set()
+            for _, vars in self.quantifiers:
+                nodes.update(vars)
 
         in_degree: Dict[int, int] = {n: 0 for n in nodes}
         for u in nodes:

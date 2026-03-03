@@ -181,12 +181,18 @@ TRIBOOL_INDETERMINATE = 2
 class _InterpolatingSolver:
     """Thin Python wrapper around the ``itp`` C++ module."""
 
-    def __init__(self, first_part: List[List[int]], second_part: List[List[int]]):
+    def __init__(
+        self,
+        first_part: List[List[int]],
+        second_part: List[List[int]],
+        max_var: Optional[int] = None,
+    ):
         _ensure_itp_importable()
         import itp as _itp  # type: ignore[import-untyped]
 
         self._itp = _itp
-        self.max_var_index = _max_var_index(first_part + second_part)
+        formula_max = _max_var_index(first_part + second_part)
+        self.max_var_index = max(formula_max, max_var if max_var is not None else 0)
         self.solver: Any = _itp.InterpolatingMiniSAT(self.max_var_index)
         self.solver.addFormula(
             _minisat_clauses(first_part), _minisat_clauses(second_part)
@@ -239,8 +245,16 @@ class _DefinabilityChecker:
         Part 2: F(X, Y') + off-selectors + equality selectors
     """
 
-    def __init__(self, formula: List[List[int]], existentials: List[int]):
-        self.max_variable = _max_var_index(formula)
+    def __init__(
+        self,
+        formula: List[List[int]],
+        existentials: List[int],
+        num_vars: Optional[int] = None,
+    ):
+        if num_vars is None:
+            self.max_variable = _max_var_index(formula)
+        else:
+            self.max_variable = num_vars
         variables: Set[int] = {abs(lit) for clause in formula for lit in clause}
         self.renaming: Dict[int, int] = {v: v + self.max_variable for v in variables}
         formula_copy = _rename_formula(formula, self.renaming)
@@ -271,7 +285,9 @@ class _DefinabilityChecker:
 
         self.max_variable = 5 * self.max_variable
 
-        self.solver = _InterpolatingSolver(formula + on, formula_copy + off + eq)
+        self.solver = _InterpolatingSolver(
+            formula + on, formula_copy + off + eq, max_var=self.max_variable
+        )
         self.backbone_solver = SATSolver(name="cadical195", bootstrap_with=formula)
 
     def add_clause(self, clause: List[int]) -> None:
@@ -373,18 +389,23 @@ class ManthanUniquePreprocessor(Preprocessor):
         # DefinabilityChecker see that those variables are determined,
         # enabling it to detect more uniquely-defined functions downstream.
         augmented_clauses = list(clauses)
-        num_vars = _max_var_index(clauses)
+        # Use the maximum of all sources to prevent ID clashes.
+        num_vars = max(
+            _max_var_index(clauses),
+            max(x_vars, default=0),
+            max(y_vars, default=0),
+        )
         aux_start = num_vars + 1
         for y in resolved:
             if y in candidates:
                 new_clauses, aux_start = candidates[y].to_cnf(y, aux_start)
                 augmented_clauses.extend(new_clauses)
 
-        checker = _DefinabilityChecker(augmented_clauses, y_vars)
+        checker = _DefinabilityChecker(augmented_clauses, y_vars, num_vars=num_vars)
         try:
             self._run_detection(
                 checker,
-                clauses,
+                augmented_clauses,
                 x_vars,
                 y_vars,
                 y_set,
@@ -399,7 +420,7 @@ class ManthanUniquePreprocessor(Preprocessor):
     def _run_detection(
         self,
         checker: _DefinabilityChecker,
-        clauses: List[List[int]],
+        augmented_clauses: List[List[int]],
         x_vars: List[int],
         y_vars: List[int],
         y_set: Set[int],
@@ -408,7 +429,12 @@ class ManthanUniquePreprocessor(Preprocessor):
         function_manager: FunctionManager,
         dep_scheme: Optional["DependencyScheme"] = None,
     ) -> None:
-        num_vars = _max_var_index(clauses)
+        # Use the maximum of all sources to prevent ID clashes.
+        num_vars = max(
+            _max_var_index(augmented_clauses),
+            max(x_vars, default=0),
+            max(y_vars, default=0),
+        )
         offset = 5 * num_vars + 100
         unique_vars: List[int] = []
 

@@ -13,8 +13,9 @@ class TrivialDependencyScheme(StaticDependencyScheme):
         self,
         quantifiers: List[Tuple[str, List[int]]],
         num_vars: int,
+        clauses: List[List[int]] | None = None,
     ):
-        super().__init__(quantifiers, num_vars)
+        super().__init__(quantifiers, num_vars, clauses)
 
     def compute(self) -> None:
         seen_vars: set[int] = set()
